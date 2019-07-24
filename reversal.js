@@ -1,24 +1,26 @@
+var steem    = require('steem');
 
-function checkReversalAmount(reversal, processed_bids) {
+
+function checkAmount(reversal, reversal_price, steem_price, sbd_price) {
   console.log('checkReversalAmount func activated')
-  var amount   = reversal.amount
-  var currency = reversal.currency
-  if (processed_bids && processed_bids.find(x => x.permlink == reversal.permlink)) {
-    var price             = processed_bids.find(x => x.permlink == reversal.permlink).amount
-    var accepted_currency = processed_bids.find(x => x.permlink == reversal.permlink).currency
-    var accepted_price    = parseFloat(price * config.reversal_price).toFixed(3)
-    console.log('prices check', amount, accepted_price)
-    console.log('currencies check', currency, accepted_currency)
-    if (amount == accepted_price && currency === accepted_currency) {
-      utils.log('Reversal amount is correct!')
-      reverseVote(reversal, 0)
-      sendReversalComment(reversal)
-    } else {
-      console.log('Reversal amount NOT correct!')
-    }
+  let amount              = reversal.amount
+  let currency            = reversal.currency
+  let reversal_amount     = reversal.reversal_amount
+  let reversal_currency   = reversal.reversal_currency
+  
+  let amount_usd          = reversal.currency == 'STEEM' ? amount * steem_price : amount * sbd_price
+  let reversal_amount_usd = reversal_currency == 'STEEM' ? reversal_amount * steem_price : reversal_amount * sbd_price
+  let reversal_price      = amount_usd * reversal_price
+  let leftovers_usd       = reversal_amount_usd - reversal_price
+
+  if (reversal_amount_usd == reversal_price) {
+    console.log('reversal amount matches perfectly the reversal price')
+  } else if (reversal_amount_usd > reversal_price) {
+    console.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
   } else {
-    console.log('Reversal permlink wasnt found on processed_bids')
+    console.log('reversal request amount is below the reversal price, sending back funds')
   }
+  return leftovers_usd
 }
 
 function reverseVote(reversal, retries, callback) {
@@ -30,13 +32,13 @@ function reverseVote(reversal, retries, callback) {
       if (callback)
         callback();
     } else {
-      logError('Error sending vote for: @' + reversal.author + '/' + reversal.permlink + ', Error: ' + err);
+      logError('Error reversing vote for: @' + reversal.author + '/' + reversal.permlink + ', Error: ' + err);
 
       // Try again on error
       if(retries < 2)
         setTimeout(function() { reverseVote(reversal, retries + 1, callback); }, 10000);
       else {
-        utils.log('============= Vote reversal transaction failed three times for: @' + reversal.author + '/' + reversal.permlink + ' Reversal Amount: ' + reversal.price + ' ' + reversal.currency + ' ===============');
+        utils.log('============= Vote reversal transaction failed three times for: @' + reversal.author + '/' + reversal.permlink + ' Reversal Amount: ' + reversal.reversal_amount + ' ' + reversal.reversal_currency + ' ===============');
         logFailedReversal(reversal, err);
 
         if (callback)
@@ -102,5 +104,5 @@ function logFailedReversal(reversal, message) {
 }
 
 module.exports = {
-  checkReversalAmount: checkReversalAmount
+  checkAmount: checkAmount
 }

@@ -21,7 +21,7 @@ var use_delegators    = false;
 var round_end_timeout = -1;
 var steem_price       = 1;  // This will get overridden with actual prices if a price_feed_url is specified in settings
 var sbd_price         = 1;    // This will get overridden with actual prices if a price_feed_url is specified in settings
-var version           = 'Steemium Fork - 1.0.0';
+var version           = 'postpromoter Steemium Fork - 1.0.0';
 var client            = null;
 var rpc_node          = null;
 
@@ -356,7 +356,16 @@ function getTransactions(callback) {
   client.database.call('get_account_history', [account.name, -1, num_trans]).then(function (result) {
 
     var bid_history = result.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == config.account) }).map((x) => x[1].op[1])
-    console.log(bid_history)
+    bid_history.forEach((bid) => {
+      if (bid.memo.startsWith('#')) {
+        try { 
+          bid.memo = steem.memo.decode(config.memo_key, bid.memo)
+        }catch(e){
+          console.log(e)
+          console.log(bid)
+        }
+      }
+    })
     // On first load, just record the list of the past 50 transactions so we don't double-process them.
     if (first_load && transactions.length == 0) {
       transactions = result.map(r => r[1].trx_id).filter(t => t != '0000000000000000000000000000000000000000');
@@ -413,29 +422,53 @@ function getTransactions(callback) {
 
             if(transactions.length > 60)
             transactions.shift();
-
-            memo = steem.memo.decode(config.memo_key, op[1].memo)
+            // Since we decrypt all historical bids there is not need to decript each single one anymore
+            // try { 
+            //   memo = steem.memo.decode(config.memo_key, op[1].memo)
+            // }catch(e) {
+            //   console.log(e)
+            //   continue
+            // }
             console.log(memo)
             var wordsArray = memo.split(' ')
-
-            if (config.reversal_mode && wordsArray && wordsArray[1] === 'reversal') { // suggestion: make it less common like 'ppflag' as keyword
+            console.log(wordsArray)
+            if (config.reversal_mode && wordsArray && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
               console.log('Reversal Memo detected!')
               console.log(wordsArray)
-              var permlink   = wordsArray[2].substr(wordsArray[2].lastIndexOf('/') + 1)
-              var author     = wordsArray[2].substring(wordsArray[2].lastIndexOf('@') + 1, wordsArray[2].lastIndexOf('/'))
-              var match      = bid_history.find((x)=> x.memo === permlink)
-              var bidder     = ''
+              var postURL            = wordsArray[1] // this can be problematic if inputs are fromdifferent UIs (steemit vs steampeak)
+              var permlink           = postURL.substr(postURL.lastIndexOf('/') + 1)
+              var author             = postURL.substring(postURL.lastIndexOf('@') + 1, postURL.lastIndexOf('/'))
+              var match              = bid_history.find((x)=> x.memo === postURL)
+              var reversal_requester = op[1].from
               try {
-                bidder = match.from
+                console.log('the post reversal request belongs to @' + match.from + ' for the post ' + match.permlink)
               } catch(e) {
                 console.log('Reversal permlink wasnt found on bid history')
-                // we need to refund at this point to the reversal sender
+                let memo = '504: Reversal request refund'
+                client.broadcast.transfer({ amount: utils.format(amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+                transactions.push(trans[1].trx_id)
                 continue
               }
-              var reversal   = {bidder: bidder, author: author, from: op[1].from, amount: amount, currency: currency, permlink: permlink}
+              var reversal = { amount: match.amount, author: author, reversal_requester: reversal_requester, reversal_amount: amount, reversal_currency: currency, permlink: permlink } 
               console.log(reversal)
-              reversal.checkReversalAmount(reversal)
-              continue // reversals are not regular bids
+              let leftovers_usd = reverse.checkAmount(reversal, config.reversal_price, steem_price, sbd_price)
+              if (leftovers < 0) {
+                // send money back => amount is not enough
+                let memo = permlink + ' Reversal amount is not enough, the price for reversal is ' + (config.reversal_price * 100) + '% of the original bid. This services sends back leftovers, so feel free to send a rough estimation'
+                client.broadcast.transfer({ amount: utils.format(amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+                transactions.push(trans[1].trx_id)
+                continue
+              } else if (leftovers_usd > 0) { 
+                // send leftovers back
+                let leftovers = (currency == 'STEEM') ? parseFloat(leftovers_usd / steem_price).toFixed(3) : parseFloat(leftovers_usd / sbd_price).toFixed(3)
+                let memo = 'Reversal leftovers from ' + permlink
+                client.broadcast.transfer({ amount: utils.format(leftovers, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+              }
+              reversal.reverseVote(function() {
+                utils.log('reverse Vote finished')
+                transactions.push(trans[1].trx_id)
+                continue // reversals are not regular bids
+              })
             }
           }
 
