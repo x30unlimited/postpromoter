@@ -21,7 +21,7 @@ var use_delegators    = false;
 var round_end_timeout = -1;
 var steem_price       = 1;  // This will get overridden with actual prices if a price_feed_url is specified in settings
 var sbd_price         = 1;    // This will get overridden with actual prices if a price_feed_url is specified in settings
-var version           = 'Steemium Version - 1.0.0';
+var version           = 'Steemium Fork - 1.0.0';
 var client            = null;
 var rpc_node          = null;
 
@@ -354,6 +354,9 @@ function getTransactions(callback) {
   }
 
   client.database.call('get_account_history', [account.name, -1, num_trans]).then(function (result) {
+
+    var bid_history = result.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == config.account) }).map((x) => x[1].op[1])
+    console.log(bid_history)
     // On first load, just record the list of the past 50 transactions so we don't double-process them.
     if (first_load && transactions.length == 0) {
       transactions = result.map(r => r[1].trx_id).filter(t => t != '0000000000000000000000000000000000000000');
@@ -412,18 +415,26 @@ function getTransactions(callback) {
             transactions.shift();
 
             memo = steem.memo.decode(config.memo_key, op[1].memo)
-
+            console.log(memo)
             var wordsArray = memo.split(' ')
-            var permlink   = wordsArray[2].substr(wordsArray[2].lastIndexOf('/') + 1)
-            var author     = wordsArray[2].substring(wordsArray[2].lastIndexOf('@') + 1, wordsArray[2].lastIndexOf('/'))
-            console.log(wordsArray)
-            if (config.reversal_mode && wordsArray[1] === 'reversal') { // suggestion: make it less common like 'ppflag' as keyword
+
+            if (config.reversal_mode && wordsArray && wordsArray[1] === 'reversal') { // suggestion: make it less common like 'ppflag' as keyword
               console.log('Reversal Memo detected!')
-              console.log(wordsArray[2])
-              var bidder = processed_bids.find((x)=> x.permlink === permlink).sender
-              var reversal = {bidder: bidder, author: author, from: op[1].from, amount: amount, currency: currency, permlink: permlink}
+              console.log(wordsArray)
+              var permlink   = wordsArray[2].substr(wordsArray[2].lastIndexOf('/') + 1)
+              var author     = wordsArray[2].substring(wordsArray[2].lastIndexOf('@') + 1, wordsArray[2].lastIndexOf('/'))
+              var match      = bid_history.find((x)=> x.memo === permlink)
+              var bidder     = ''
+              try {
+                bidder = match.from
+              } catch(e) {
+                console.log('Reversal permlink wasnt found on bid history')
+                // we need to refund at this point to the reversal sender
+                continue
+              }
+              var reversal   = {bidder: bidder, author: author, from: op[1].from, amount: amount, currency: currency, permlink: permlink}
               console.log(reversal)
-              reversal.checkReversalAmount(reversal, processed_bids)
+              reversal.checkReversalAmount(reversal)
               continue // reversals are not regular bids
             }
           }

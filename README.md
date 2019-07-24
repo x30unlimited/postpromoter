@@ -10,7 +10,7 @@ First, enable the reversal in config file (config.json), setting 'reversal_mode'
 
 Second, define a reversal price. For example, 25% of original bid price, set `reversal_price' in config file as '0.25'.
 
-Users will simply send encrypted memos along with the bid with the keyword "reversal" before post URL. For example, "reversal https://steemit/@example/my-example-post-to-reversal"
+Users will simply send encrypted memos along with the bid with the keyword "reversal" before post URL. For example, "# reversal https://steemit/@example/my-example-post-to-reversal" (notice the spaces between '#' , 'reversal' and 'post URL')
 
 
 ```
