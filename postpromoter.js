@@ -1,28 +1,29 @@
-var fs = require("fs");
-var request = require("request");
-var steem = require('steem');
-var dsteem = require('dsteem');
-var utils = require('./utils');
+var fs       = require("fs");
+var request  = require("request");
+var steem    = require('steem');
+var dsteem   = require('dsteem');
+var utils    = require('./utils');
+var reversal = require('./reversal')
 
-var account = null;
-var transactions = [];
-var outstanding_bids = [];
-var delegators = [];
-var last_round = [];
-var next_round = [];
-var blacklist = [];
-var whitelist = [];
-var config = null;
-var first_load = true;
-var isVoting = false;
-var last_withdrawal = null;
-var use_delegators = false;
+var account           = null;
+var transactions      = [];
+var outstanding_bids  = [];
+var delegators        = [];
+var last_round        = [];
+var next_round        = [];
+var blacklist         = [];
+var whitelist         = [];
+var config            = null;
+var first_load        = true;
+var isVoting          = false;
+var last_withdrawal   = null;
+var use_delegators    = false;
 var round_end_timeout = -1;
-var steem_price = 1;  // This will get overridden with actual prices if a price_feed_url is specified in settings
-var sbd_price = 1;    // This will get overridden with actual prices if a price_feed_url is specified in settings
-var version = '2.1.1';
-var client = null;
-var rpc_node = null;
+var steem_price       = 1;  // This will get overridden with actual prices if a price_feed_url is specified in settings
+var sbd_price         = 1;    // This will get overridden with actual prices if a price_feed_url is specified in settings
+var version           = '2.1.1';
+var client            = null;
+var rpc_node          = null;
 
 startup();
 
@@ -393,14 +394,39 @@ function getTransactions(callback) {
 
         // We only care about transfers to the bot
         if (op[0] == 'transfer' && op[1].to == config.account) {
-          var amount = parseFloat(op[1].amount);
+          var amount   = parseFloat(op[1].amount);
           var currency = utils.getCurrency(op[1].amount);
+          var memo     = op[1].memo;
           utils.log("Incoming Bid! From: " + op[1].from + ", Amount: " + op[1].amount + ", memo: " + op[1].memo);
 
           // Check for min and max bid values in configuration settings
           var min_bid = config.min_bid ? parseFloat(config.min_bid) : 0;
           var max_bid = config.max_bid ? parseFloat(config.max_bid) : 9999;
           var max_bid_whitelist = config.max_bid_whitelist ? parseFloat(config.max_bid_whitelist) : 9999;
+
+          if (op[1].memo.startsWith('#')) {
+            console.log('encrypted memo detected!')
+            transactions.push(trans[1].trx_id);
+
+            if(transactions.length > 60)
+            transactions.shift();
+
+            memo = steem.memo.decode(config.memo_key, op[1].memo)
+
+            var wordsArray = memo.split(' ')
+            var permlink   = wordsArray[2].substr(wordsArray[2].lastIndexOf('/') + 1)
+            var author     = wordsArray[2].substring(wordsArray[2].lastIndexOf('@') + 1, wordsArray[2].lastIndexOf('/'))
+            console.log(wordsArray)
+            if (config.reversal_mode && wordsArray[1] === 'reversal') { // suggestion: make it less common like 'ppflag' as keyword
+              console.log('Reversal Memo detected!')
+              console.log(wordsArray[2])
+              var bidder = processed_bids.find((x)=> x.permlink === permlink).sender
+              var reversal = {bidder: bidder, author: author, from: op[1].from, amount: amount, currency: currency, permlink: permlink}
+              console.log(reversal)
+              reversal.checkReversalAmount(reversal, processed_bids)
+              continue // reversals are not regular bids
+            }
+          }
 
           if(config.disabled_mode) {
             // Bot is disabled, refund all Bids
