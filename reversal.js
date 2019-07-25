@@ -1,5 +1,7 @@
-var steem    = require('steem');
-
+var steem  = require('steem');
+var utils  = require('./utils.js');
+var fs     = require('fs');
+var config = JSON.parse(fs.readFileSync("config.json"));
 
 function checkAmount(reversal, reversal_price, steem_price, sbd_price) {
   console.log('checkReversalAmount func activated')
@@ -10,12 +12,12 @@ function checkAmount(reversal, reversal_price, steem_price, sbd_price) {
   
   let amount_usd          = reversal.currency == 'STEEM' ? amount * steem_price : amount * sbd_price
   let reversal_amount_usd = reversal_currency == 'STEEM' ? reversal_amount * steem_price : reversal_amount * sbd_price
-  let reversal_price      = amount_usd * reversal_price
-  let leftovers_usd       = reversal_amount_usd - reversal_price
+  let _reversal_price     = amount_usd * reversal_price
+  let leftovers_usd       = reversal_amount_usd - _reversal_price
 
-  if (reversal_amount_usd == reversal_price) {
+  if (reversal_amount_usd == _reversal_price) {
     console.log('reversal amount matches perfectly the reversal price')
-  } else if (reversal_amount_usd > reversal_price) {
+  } else if (reversal_amount_usd > _reversal_price) {
     console.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
   } else {
     console.log('reversal request amount is below the reversal price, sending back funds')
@@ -104,5 +106,6 @@ function logFailedReversal(reversal, message) {
 }
 
 module.exports = {
-  checkAmount: checkAmount
+  checkAmount: checkAmount,
+  reverseVote: reverseVote
 }
