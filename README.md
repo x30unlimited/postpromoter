@@ -9,13 +9,13 @@ Encrypted memo is enabled out-of-the-box. No configuration required. Upon encryp
 First, enable the reversal in config file (config.json), setting 'reversal_mode' to `true`. 
 
 Second, define a reversal price. For example, 25% of original bid price, set `reversal_price' in config file as '0.25'.
-
 Users will simply send encrypted memos along with the bid with the keyword "reversal" before post URL. 
+
 For example: 
 ```
-"#reverse https://steemit/@example/my-example-post-to-reversal" (notice the spaces between '#' , 'reversal' and 'post URL')
+"#reverse https://steemit/@example/my-example-post-to-reversal" 
 ```
-
+(notice the space between 'reverse' and 'post URL')
 
 
 ## Installation
@@ -49,6 +49,10 @@ Then set the following options in config.json:
   "memo_key": "your_private_memo_key"
   "posting_key": "your_private_posting_key",
   "active_key": "your_private_active_key",
+  "test_account": "yourtestaccount",
+  "test_memo_key": "yourtestmemokey",
+  "test_posting_key": "yourtestpostingkey",
+  "test_active_key": "yourtestactivekey",
   "auto_claim_rewards" : true, // Set to false if you don't want to claim rewards automatically
   "post_rewards_withdrawal_account": "account_name", // Automatically withdraw any liquid post rewards to the specified account
   "min_bid": 0.1,
