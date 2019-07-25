@@ -1,19 +1,22 @@
 # Post Promoter - Steem Bid-Based Voting Bot
 
 ## Encryted memo
-```
+
 Encrypted memo is enabled out-of-the-box. No configuration required. Upon encrypted memo detection, the postpromoter mechanics downstream will behave normally once memo is decrypted with the bidbot memo key.
-```
+
 ## Reversal configuration (steemium fork)
-```
+
 First, enable the reversal in config file (config.json), setting 'reversal_mode' to `true`. 
 
 Second, define a reversal price. For example, 25% of original bid price, set `reversal_price' in config file as '0.25'.
 
-Users will simply send encrypted memos along with the bid with the keyword "reversal" before post URL. For example, "# reversal https://steemit/@example/my-example-post-to-reversal" (notice the spaces between '#' , 'reversal' and 'post URL')
-
-
+Users will simply send encrypted memos along with the bid with the keyword "reversal" before post URL. 
+For example: 
 ```
+"#reverse https://steemit/@example/my-example-post-to-reversal" (notice the spaces between '#' , 'reversal' and 'post URL')
+```
+
+
 
 ## Installation
 ```

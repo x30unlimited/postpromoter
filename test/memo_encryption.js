@@ -6,7 +6,7 @@ var dsteem = require('dsteem');
 var client = new dsteem.Client('https://anyx.io')
 var pubkey = ''
 
-describe('async client test:', () => {
+describe('async client test and memo encryption/decryption:', () => {
 	it('should request test account data', (done) => {
 		client.database.call('get_accounts', [[config.test_account]])
 		.then((res) => {
