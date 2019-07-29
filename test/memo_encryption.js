@@ -8,15 +8,21 @@ var client = new dsteem.Client('https://anyx.io')
 var fs     = require('fs')
 var config = JSON.parse(fs.readFileSync("./config.json"))
 var chalk  = require('chalk')
+const ora = require('ora');
+
+const verbose_mode = false
 
 const min_vp = 5000
 
-console.log(chalk.bgWhite('testing with account: @' + config.test_account))
+console.log(chalk.bgWhite('testing account: @' + config.account + ' | testing bidder account:@' + config.test_account))
 
 function wait (seconds) {
-	console.log(chalk.bgMagenta('waiting ' + seconds/1000 + ' seconds'))
+	let spinner = ora('waiting ' + seconds/1000 + ' seconds').start();
 	return new Promise((resolve, reject) => {
-		setTimeout(() => {resolve()}, seconds)
+		setTimeout(() => {
+			resolve()
+			spinner.stop()
+		}, seconds)
 	})
 }
 
@@ -25,7 +31,7 @@ require('../postpromoter.js')
 
 setTimeout(function() {
 
-  describe('my suite', function() {
+  describe('steemium postpromoter fork test suite', function() {
 
 		describe('async client test and memo encryption/decryption:', function () {
 			var bidhistory      = []
@@ -50,11 +56,15 @@ setTimeout(function() {
 			var expected_memo2_response = '#' + config.transfer_memos['reversal_not_found']
 			expected_memo2_response = expected_memo2_response.replace(/{postURL}/g, memo2.split(' ')[1]);
 			var expected_leftover = Math.random()
-			console.log(chalk.bold.bgGreen('memo1 ' + memo1))
-			console.log(chalk.bold.bgGreen('memo2 ' + memo2))
-			// console.log('memo3 ' + memo3)
-			console.log(chalk.bold.bgYellow('expected_memo1_response ' + expected_memo1_response))
-			console.log(chalk.bold.bgYellow('expected_memo2_response ' + expected_memo2_response))
+
+			if (verbose_mode) {
+				console.log(chalk.italic.green('memo1 ' + memo1))
+				console.log(chalk.italic.green('memo2 ' + memo2))
+				// console.log('memo3 ' + memo3)
+				console.log(chalk.bold.yellow('expected_memo1_response ' + expected_memo1_response))
+				console.log(chalk.bold.yellow('expected_memo2_response ' + expected_memo2_response))				
+			}
+
 			before(async function() {
 				
 				// check if already existing test post
@@ -65,15 +75,15 @@ setTimeout(function() {
 				last_post       = comment_history[comment_history.length -1]
 
 				if (last_post && last_post.permlink.indexOf('postpromoter') > -1) {
-					console.log(chalk.italic.blue('there is already an existing testing post => ' + last_post.permlink))
+					if (verbose_mode) console.log(chalk.italic.blue('there is already an existing testing post => ' + last_post.permlink))
 					test_post = {author: config.test_account, permlink: last_post.permlink, parent_permlink: 'steemium', parent_author: '', body: 'testing the postpromoter steemium fork', json_metadata: JSON.stringify({app: 'steemium postpromoter fork'}), title: 'postpromoter-steemium-fork-test-' + Date.parse(new Date())}
 					
 					let content = await client.database.call('get_content', [last_post.author, last_post.permlink])
 					if (content.active_votes.filter((x) => x.voter == config.account && x.weigth > 0).length > 0) {
-						console.log(chalk.italic.blue('test post has already a vote from main account @' + config.account))
+						if(verbose_mode) console.log(chalk.italic.blue('test post has already a vote from main account @' + config.account))
 						already_voted = true
 					}else {
-						console.log(chalk.italic.blue('test post is not voted yet'))
+						if (verbose_mode) console.log(chalk.italic.blue('test post is not voted yet'))
 						// this.skip()
 					}
 					let account = await client.database.call('get_accounts', [[config.account]])
@@ -94,7 +104,7 @@ setTimeout(function() {
 				op2 = { amount: amount2, from: config.test_account, to: config.account, memo: memo2_encrypted }
 				op3 = { amount: (parseFloat(config.min_bid).toFixed(3) + ' STEEM'), from: config.test_account, to: config.account, memo: memo3_encrypted}
 				op4 = { amount: (parseFloat(config.reversal_price * config.min_bid + expected_leftover).toFixed(3) + ' STEEM'), from: config.test_account, to: config.account, memo: memo4_encrypted}
-			  console.log(chalk.green('amount4 = ' + parseFloat(config.reversal_price * config.min_bid + expected_leftover).toFixed(3)))
+			    // console.log(chalk.green('amount4 = ' + parseFloat(config.reversal_price * config.min_bid + expected_leftover).toFixed(3)))
 			})
 			it('should encrypt and decript a memo', () => {
 				assert.equal(memo1, steem.memo.decode(config.test_memo_key, memo1_encrypted))
@@ -139,8 +149,10 @@ setTimeout(function() {
 						op.memo = steem.memo.decode(config.test_memo_key, op.memo)
 					}
 				})
-			    console.log(bidhistory.map((op) => op.memo))
-			    console.log(chalk.underline.red('should match: ' + memo1))
+				if (verbose_mode) {
+				    console.log(bidhistory.map((op) => op.memo))
+			    	console.log(chalk.underline.red('should match: ' + memo1))
+				}
 				bidhistory = bidhistory.filter((op) => op.memo == memo1 && op.from == config.test_account)
 				expect(bidhistory).to.have.length(1)
 			})
@@ -154,8 +166,10 @@ setTimeout(function() {
 						op.memo = steem.memo.decode(config.test_memo_key, op.memo)
 					}
 				})
-			    console.log(bidhistory.map((op) => op.memo))
-			    console.log(chalk.underline.red('should match: ' + memo2))
+				if (verbose_mode) {
+				    console.log(bidhistory.map((op) => op.memo))
+				    console.log(chalk.underline.red('should match: ' + memo2))
+				}
 				bidhistory = bidhistory.filter((op) => op.memo == memo2 && op.from == config.test_account)
 				expect(bidhistory).to.have.length(1)
 			})
@@ -169,8 +183,10 @@ setTimeout(function() {
 						op.memo = steem.memo.decode(config.test_memo_key, op.memo)
 					}
 				})
-			    console.log(bidhistory.map((op) => op.memo))
-			    console.log(chalk.underline.red('should match: ' + expected_memo1_response))
+				if (verbose_mode) {
+				    console.log(bidhistory.map((op) => op.memo))
+				    console.log(chalk.underline.red('should match: ' + expected_memo1_response))
+				}
 				bidhistory = bidhistory.filter((op) => op.memo == expected_memo1_response && op.from == config.account)
 				expect(bidhistory.length).to.be.least(1)
 			})
@@ -184,8 +200,10 @@ setTimeout(function() {
 						op.memo = steem.memo.decode(config.test_memo_key, op.memo)
 					}
 				})
-			    console.log(bidhistory.map((op) => op.memo))
-			    console.log(chalk.underline.red('should match: ' + expected_memo2_response))
+				if (verbose_mode) {
+				    console.log(bidhistory.map((op) => op.memo))
+				    console.log(chalk.underline.red('should match: ' + expected_memo2_response))
+				}
 				bidhistory = bidhistory.filter((op) => op.memo == expected_memo2_response && op.from == config.account)
 				expect(bidhistory).to.have.length(1)
 			})
@@ -195,7 +213,7 @@ setTimeout(function() {
 					this.skip()					
 				}
 				if (vp < min_vp) {
-					console.log(chalk.italic.red('VP too low, try again once account @' + config.account + ' is at 100% VP'))
+					if (verbose_mode) console.log(chalk.italic.red('VP too low, try again once account @' + config.account + ' is at 100% VP'))
 					this.skip()
 				}
 				client.broadcast.transfer(op3, dsteem.PrivateKey.fromString(config.test_active_key))

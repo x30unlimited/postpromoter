@@ -10,12 +10,13 @@
     "type": "git",
     "url": "git+https://github.com/MattyIce/postpromoter.git"
   },
-  "author": "yabapmatt",
+  "author": "lightproject",
   "license": "MIT",
   "dependencies": {
     "chalk": "^2.4.2",
     "dsteem": "^0.10.1",
     "express": "^4.16.3",
+    "ora": "^3.4.0",
     "request": "^2.88.0",
     "steem": "^0.7.1"
   },

@@ -452,8 +452,6 @@ function getTransactions(callback) {
             var reversal_requester = op[1].from
             
             if (vote_to_reverse) {
-              console.log('vote_to_reverse below')
-              console.log(vote_to_reverse)
               utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
               let leftovers_usd = reverse.checkAmount(vote_to_reverse.amount, op[1].amount, config.reversal_price, steem_price, sbd_price)
               if (leftovers_usd < 0) {

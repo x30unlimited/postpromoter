@@ -1,23 +1,32 @@
-# Post Promoter - Steem Bid-Based Voting Bot
+# Steemium Post Promoter Fork
+
+## Intro
+This fork does not modify any of the original postpromoter features.
+
+This fork expands the original postpromoter capabilities with new features, but always tries to respect the original code by integrating new modules and by trying to modify the main module as little as possible.
+
 
 ## Fork Features
-  * Encrypted memos
-  * Reverse bids
-  * Auto account claiming </br>
-    Since bidbots account will usually sit on large amounts of SP, it is often convinient to expend RC (resource credits) on new accounts.
-  * Mocha test Module
-    Since we are implementing relatively new and complex features, we want to make sure there is a open available testing module so that each user can independently make sure everything works before going into production.
-    Among the tests, these are some of the currently available:
-      * Memo encryption / decryption
-      * dsteem Asynchronous client requests
-      * Bid for vote under min_bid and confirming a refund
-      * Bid for vote and confirming vote
-      * Check via blockchain that refunds have been properly sent
-      * Sending above vote-reversal price and confirming leftovers have been properly refunded
+  ### Encrypted memos
+  Bids and vote reversal requests can now be both encrypted or unencrypted. Upon encrypted transfers, postpromoter will always answer encrypting the memo.
+  ### Reverse bids
+  Bidbot owners can now set a price for a vote reversal. For instance, accountA bids for vote on one of its posts. Then accountB sends a vote reversal request for accountA post. 
+  AccountB will actually need to pay only a fraction % of the original bid amount paid by account A.
+  ### Auto account claiming
+Since bidbots account will usually sit on large amounts of SP, it is often convenient to expend RC (resource credits) on new accounts.
+  ### Mocha test Module
+Since we are implementing relatively new and complex features, we want to make sure there is a open available testing module so that each user can independently make sure everything works before going into production.
+**Among the tests, these are some of the currently available:**
+* Memo encryption / decryption
+* dsteem Asynchronous client requests
+* Bid for vote under min_bid and confirming a refund
+* Bid for vote and confirming vote
+* Check via blockchain that refunds have been properly sent
+* Sending above vote-reversal price and confirming leftovers have been properly refunded
 
 ## Encryted memo configuration
 
-Encrypted memo is enabled out-of-the-box. No configuration required. Upon encrypted memo detection, the postpromoter mechanics downstream will behave normally once memo is decrypted with the bidbot memo key.
+Encrypted memo is enabled out-of-the-box. **No configuration required**. Upon encrypted memo detection, the postpromoter mechanic downstream will behave normally once memo is decrypted with the bidbot memo key.
 
 ## Reversal configuration
 
@@ -35,7 +44,7 @@ For example:
 
 ## Installation
 ```
-$ git clone https://github.com/MattyIce/postpromoter.git
+$ git clone https://github.com/AusPrinzip/postpromoter.git
 $ npm install
 ```
 
@@ -48,80 +57,85 @@ $ mv config-example.json config.json
 Then set the following options in config.json:
 ```
 {
-  "rpc_nodes": // Set the list of RPC nodes you would like to connect to (https://api.steemit.com is the default if this is not set). The software will automatically fail over to the next node on the list if the current one is having issues.
-  [
+  "rpc_nodes": [
     "https://api.steemit.com",
     "https://rpc.buildteam.io",
     "https://steemd.minnowsupportproject.org",
     "https://steemd.privex.io",
     "https://gtg.steem.house:8090"
   ],
-  "backup_mode": false, // Put the bot in "backup mode" where it will process all bids and account state but not vote or transact
-  "disabled_mode": false, // Set this to true to refund all funds sent to the bot
-  "detailed_logging": false, // Whether or not detailed logging is enabled
-  "owner_account": "bot_owner_account", // The name of the bot owner account (can be left null or blank)
-  "account": "yourbotaccount",
-  "memo_key": "your_private_memo_key"
+  "reversal_mode": false,
+  "reversal_price": 0.25,
+  "backup_mode": false,
+  "disabled_mode": false,
+  "detailed_logging": false,
+  "owner_account": "bot_owner_account_name",
+  "account": "your_bot_account_name",
+  "memo_key": "your_private_memo_key",
   "posting_key": "your_private_posting_key",
   "active_key": "your_private_active_key",
-  "test_account": "yourtestaccount",
-  "test_memo_key": "yourtestmemokey",
-  "test_posting_key": "yourtestpostingkey",
-  "test_active_key": "yourtestactivekey",
-  "auto_claim_rewards" : true, // Set to false if you don't want to claim rewards automatically
-  "post_rewards_withdrawal_account": "account_name", // Automatically withdraw any liquid post rewards to the specified account
+  "test_account": "your_testing_account",
+  "test_memo_key": "memo_test_key",
+  "test_posting_key":"`posting_test_key",
+  "test_active_key":"active_test_key",
+  "auto_claim_rewards" : true,
+  "post_rewards_withdrawal_account": "withdraw_liquid_post_rewards_to_account",
   "min_bid": 0.1,
-  "max_bid": 50,  // Maximum bid amount for regular users
-  "max_bid_whitelist": 999, // Maximum bid amount for whitelisted users
-  "min_resteem": 1, // If a bid is sent for this amount or more then the bot will resteem the post
-  "max_roi": 10, // If too few votes come in this will limit the bot's vote weight so that no more than a 10% ROI is given for votes
-  "round_fill_limit": 0.9,  // Limit the round to 90% full to guarantee a minimum of 10% ROI for all bidders
+  "max_bid": 50,
+  "max_bid_whitelist": 999,
   "batch_vote_weight": 100,
-  "min_post_age": 20, // In minutes, minimum age of post that will be accepted
-  "max_post_age": 144, // In hours, 144 hours = 6 days
-  "allow_comments": true,
-  "currencies_accepted": ["SBD", "STEEM"], // Which currencies to accept
+  "min_post_age": 20,
+  "max_post_age": 84,
+  "allow_comments": false,
+  "currencies_accepted": ["SBD", "STEEM"],
   "refunds_enabled": true,
-  "min_refund_amount": 0.002, // This will prevent refunds for transfer memos
-  "no_refund": ["bittrex", "poloniex", "openledger", "blocktrades", "minnowbooster"], // Don't refund transactions from these accounts!
-  "max_per_author_per_round": 1, // Limit to the number of posts that can be voted on for a particular author each round
-  "comment_location": "comment.md", // The location of a markdown file containing the comment that should be left after the bot votes on a post. Leave this null or blank for no comment.
-  "price_source": "bittrex",  // Where to load STEEM/SBD prices. Default is 'bittrex'. Also can use 'coinmarketcap' or a custom prices API URL
+  "min_refund_amount": 0.002,
+  "no_refund": ["bittrex", "poloniex", "openledger", "blocktrades", "minnowbooster", "ginabot"],
+  "comment_location": "comment.md",
+  "max_per_author_per_round": 1,
+  "price_source": "bittrex",
   "blacklist_settings": {
-    "flag_signal_accounts": ["spaminator", "cheetah", "steemcleaners", "mack-bot"], // If any accounts on this list has flagged the post at the time the bid comes in it will be treated as blacklisted
-    "blacklist_location": "blacklist", // The location of the blacklist file containing one blacklisted Steem account name per line
-    "shared_blacklist_location": "http://somesite.org/steemblacklist",  // The location of a shared blacklist URL which just returns a text file containing one blacklisted Steem account name per line
-    "whitelist_location": "whitelist", // The location of the whitelist file containing one blacklisted Steem account name per line, this will override the blacklist
-    "whitelist_only": false,  // Whether or not the bot will only allow bids for posts by whitelisted accounts
-    "refund_blacklist": true,	// Whether or not to refund blacklisted users' bids
-    "blacklist_donation_account": "steemcleaners", // If "refund_blacklist" is false, then this will send all bids from blacklisted users to the specified account as a donation
-    "blacklisted_tags": ["nsfw", "other-tag"], // List of post tags that are not allowed by the bot. Bids for posts with one or more tags in this list will be refunded
-		"global_api_blacklists": ["buildawhale", "steemcleaners", "minnowbooster"] // global blacklist API http://blacklist.usesteem.com
+    "flag_signal_accounts": ["spaminator", "cheetah", "steemcleaners", "mack-bot"],
+    "blacklist_location": "blacklist",
+    "shared_blacklist_location": "",
+    "whitelist_location": "",
+    "whitelist_only": false,
+    "refund_blacklist": false,
+    "blacklist_donation_account": "steemcleaners",
+    "blacklisted_tags": ["nsfw"],
+    "global_api_blacklists": ["buildawhale", "steemcleaners", "minnowbooster"]
   },
   "auto_withdrawal": {
-    "active": true, // Activate the auto withdrawal function (will withdraw all accepted currencies)
-    "accounts": [	// List of accounts to receive daily withdrawals and the amount to send to each
+    "active": true,
+    "accounts": [
       {
-        "name": "$delegators",  // Use the special name '$delegators' to split this portion of the payout among all delegators to the account based on the amount of their delegation
+        "name": "$delegators",
         "stake": 8000,
-        "overrides": [  // Specify a beneficiary account for payments for certain delegators
+        "overrides": [
           { "name": "delegator_account", "beneficiary": "beneficiary_account" }
         ]
       },
       {
-        "name": "account2",
+        "name": "yabapmatt",
         "stake": 2000
       }
     ],
-	"frequency": "daily", // This can be "daily" for withdrawals once per day or "round_end" for withdrawals after every bidding round
-    "execute_time": 20, // Hour of the day to execute the withdrawal (0 - 23)
-    "memo": "#Today generated SBD - {balance} | Thank you." // Transaction memo, start with # if you want it encrypted
+    "frequency": "daily",
+    "execute_time": 20,
+    "memo": "# Daily Earnings - {balance} | Thank you!"
   },
-  "api": {  // This will expose an API endpoint for information about bids in each round
+  "affiliates": [
+    { "name": "memo_prefix", "fee_pct": 150, "beneficiary": "payout_account" }
+  ],
+  "api": {
     "enabled": true,
     "port": 3000
   },
-  "transfer_memos": {	// Memos sent with transfer for bid refunds
+  "transfer_memos": {
+    "already_reversed": "Vote already reversed for {postURL}",
+    "reversal_leftovers": "Leftovers from reversal request for {postURL}",
+    "reversal_not_found": "The post you request a reversal for could not be found {postURL}",
+    "reversal_not_funds": "Your reversal request sent amount {amount} is not enough for {postURL}. Please send {reversal_price}% of the original bid value to be reversed in STEEM or SBD. This services sends back leftovers, so feel free to send a rough estimation",
     "bot_disabled": "Refund for invalid bid: {amount} - The bot is currently disabled.",
     "below_min_bid": "Refund for invalid bid: {amount} - Min bid amount is {min_bid}.",
     "above_max_bid": "Refund for invalid bid: {amount} - Max bid amount is {max_bid}.",
@@ -141,12 +155,12 @@ Then set the following options in config.json:
     "bids_per_round": "Bid is invalid - This author already has the maximum number of allowed bids in this round.",
     "round_full": "The current bidding round is full. Your bid has been submitted into the following round.",
     "next_round_full": "Cannot deliver min return for this size bid in the current or next round. Please try a smaller bid amount.",
-    "forward_payment": "Payment forwarded from @{tag}."
-		"bid_confirmation": "Your bid is confirmed. You will receive your vote when the bot reaches 100% voting power. Thank you!",
-		"delegation": "Thank you for your delegation of {tag} SP! You will start to receive payouts after the next withdrawal.",
-    "whitelist_only": "Bid is invalid - Only posts by whitelisted authors are accepted by this bot."
+    "forward_payment": "Payment forwarded from @{tag}.",
+    "whitelist_only": "Bid is invalid - Only posts by whitelisted authors are accepted by this bot.",
+    "affiliate": "Affiliate payment - {tag}"
   }
 }
+
 ```
 
 ### Blacklist
