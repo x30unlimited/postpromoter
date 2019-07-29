@@ -99,98 +99,96 @@ setTimeout(function() {
 			it('should encrypt and decript a memo', () => {
 				assert.equal(memo1, steem.memo.decode(config.test_memo_key, memo1_encrypted))
 			})
-
-			// it('should send a below min_bid and a reversal request from test account, both with encrypted memos', function (done) {
-			// 	// PP WORKS ONLY WITH OPS WITH TRX_ID, VIRTUAL OPS HAVE NO TRX_ID AND THEREFORE ARE IGNORED BY PP
-			// 	client.broadcast.transfer(op1, dsteem.PrivateKey.fromString(config.test_active_key))
-			// 	.then((res) => {
-			// 		client.broadcast.transfer(op2, dsteem.PrivateKey.fromString(config.test_active_key))
-			// 		.then(async(res) => {
-			// 			done()
-			// 		})
-			// 	})
-			// })
-			// it('should request via steem rpc node the trx history of test account', async function () {
-			// 	bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 50])
-			// 	expect(bidhistory).to.have.length(51)
-			// })
-			// it ('should decrypt at least two transfer memos', async function () {
-			// 	this.retries(5)
-			// 	await wait(15000)
-			// 	bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 4])
-			// 	// console.log(bidhistory)
-			// 	bidhistory = bidhistory.map((x) => x[1].op[1])
-			// 	// console.log(bidhistory)
-			// 	bidhistory.forEach((bid) => {
-			// 		if (bid.memo && bid.memo.startsWith('#')) {
-			// 			bid.memo = steem.memo.decode(config.test_memo_key, bid.memo)
-			// 			decrypt_num++
-			// 		}
-			// 	})
-			// 	// console.log(bidhistory)
-			// 	expect(decrypt_num).to.be.least(2)
-			// })
-			// it('should find the under min-bid encrypted bid transfer', async function () {
-			// 	this.retries(5)
-			// 	await wait(15000)
-			// 	bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 10])
-			// 	bidhistory = bidhistory.map((x) => x[1].op[1])
-			// 	bidhistory.forEach((op) => {
-			// 		if (op.memo && op.memo.startsWith('#')) {
-			// 			op.memo = steem.memo.decode(config.test_memo_key, op.memo)
-			// 		}
-			// 	})
-			//     console.log(bidhistory.map((op) => op.memo))
-			//     console.log(chalk.underline.red('should match: ' + memo1))
-			// 	bidhistory = bidhistory.filter((op) => op.memo == memo1 && op.from == config.test_account)
-			// 	expect(bidhistory).to.have.length(1)
-			// })
-			// it('should find the reversal transfer', async function () {
-			// 	this.retries(5)
-			// 	await wait(10000)
-			// 	bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 10])
-			// 	bidhistory = bidhistory.map((x) => x[1].op[1])
-			// 	bidhistory.forEach((op) => {
-			// 		if (op.memo && op.memo.startsWith('#')) {
-			// 			op.memo = steem.memo.decode(config.test_memo_key, op.memo)
-			// 		}
-			// 	})
-			//     console.log(bidhistory.map((op) => op.memo))
-			//     console.log(chalk.underline.red('should match: ' + memo2))
-			// 	bidhistory = bidhistory.filter((op) => op.memo == memo2 && op.from == config.test_account)
-			// 	expect(bidhistory).to.have.length(1)
-			// })
-			// it('should find the under min-bid encrypted bid refund', async function () {
-			// 	this.retries(5)
-			// 	await wait(15000)
-			// 	bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 10])
-			// 	bidhistory = bidhistory.map((x) => x[1].op[1])
-			// 	bidhistory.forEach((op) => {
-			// 		if (op.memo && op.memo.startsWith('#')) {
-			// 			op.memo = steem.memo.decode(config.test_memo_key, op.memo)
-			// 		}
-			// 	})
-			//     console.log(bidhistory.map((op) => op.memo))
-			//     console.log(chalk.underline.red('should match: ' + expected_memo1_response))
-			// 	bidhistory = bidhistory.filter((op) => op.memo == expected_memo1_response && op.from == config.account)
-			// 	expect(bidhistory.length).to.be.least(1)
-			// })
-			// it('should find the reversal request refund', async function () {
-			// 	this.retries(5)
-			// 	await wait(10000)
-			// 	bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 10])
-			// 	bidhistory = bidhistory.map((x) => x[1].op[1])
-			// 	bidhistory.forEach((op) => {
-			// 		if (op.memo && op.memo.startsWith('#')) {
-			// 			op.memo = steem.memo.decode(config.test_memo_key, op.memo)
-			// 		}
-			// 	})
-			//     console.log(bidhistory.map((op) => op.memo))
-			//     console.log(chalk.underline.red('should match: ' + expected_memo2_response))
-			// 	bidhistory = bidhistory.filter((op) => op.memo == expected_memo2_response && op.from == config.account)
-			// 	expect(bidhistory).to.have.length(1)
-			// })
-
+			it('should send a below min_bid and a reversal request from test account, both with encrypted memos', function (done) {
+				// PP WORKS ONLY WITH OPS WITH TRX_ID, VIRTUAL OPS HAVE NO TRX_ID AND THEREFORE ARE IGNORED BY PP
+				client.broadcast.transfer(op1, dsteem.PrivateKey.fromString(config.test_active_key))
+				.then((res) => {
+					client.broadcast.transfer(op2, dsteem.PrivateKey.fromString(config.test_active_key))
+					.then(async(res) => {
+						done()
+					})
+				})
+			})
+			it('should request via steem rpc node the trx history of test account', async function () {
+				bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 50])
+				expect(bidhistory).to.have.length(51)
+			})
+			it ('should decrypt at least two transfer memos', async function () {
+				this.retries(5)
+				await wait(15000)
+				bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 4])
+				// console.log(bidhistory)
+				bidhistory = bidhistory.map((x) => x[1].op[1])
+				// console.log(bidhistory)
+				bidhistory.forEach((bid) => {
+					if (bid.memo && bid.memo.startsWith('#')) {
+						bid.memo = steem.memo.decode(config.test_memo_key, bid.memo)
+						decrypt_num++
+					}
+				})
+				// console.log(bidhistory)
+				expect(decrypt_num).to.be.least(2)
+			})
+			it('should find the under min-bid encrypted bid transfer', async function () {
+				this.retries(5)
+				await wait(15000)
+				bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 10])
+				bidhistory = bidhistory.map((x) => x[1].op[1])
+				bidhistory.forEach((op) => {
+					if (op.memo && op.memo.startsWith('#')) {
+						op.memo = steem.memo.decode(config.test_memo_key, op.memo)
+					}
+				})
+			    console.log(bidhistory.map((op) => op.memo))
+			    console.log(chalk.underline.red('should match: ' + memo1))
+				bidhistory = bidhistory.filter((op) => op.memo == memo1 && op.from == config.test_account)
+				expect(bidhistory).to.have.length(1)
+			})
+			it('should find the reversal transfer', async function () {
+				this.retries(5)
+				await wait(10000)
+				bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 10])
+				bidhistory = bidhistory.map((x) => x[1].op[1])
+				bidhistory.forEach((op) => {
+					if (op.memo && op.memo.startsWith('#')) {
+						op.memo = steem.memo.decode(config.test_memo_key, op.memo)
+					}
+				})
+			    console.log(bidhistory.map((op) => op.memo))
+			    console.log(chalk.underline.red('should match: ' + memo2))
+				bidhistory = bidhistory.filter((op) => op.memo == memo2 && op.from == config.test_account)
+				expect(bidhistory).to.have.length(1)
+			})
+			it('should find the under min-bid encrypted bid refund', async function () {
+				this.retries(5)
+				await wait(15000)
+				bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 10])
+				bidhistory = bidhistory.map((x) => x[1].op[1])
+				bidhistory.forEach((op) => {
+					if (op.memo && op.memo.startsWith('#')) {
+						op.memo = steem.memo.decode(config.test_memo_key, op.memo)
+					}
+				})
+			    console.log(bidhistory.map((op) => op.memo))
+			    console.log(chalk.underline.red('should match: ' + expected_memo1_response))
+				bidhistory = bidhistory.filter((op) => op.memo == expected_memo1_response && op.from == config.account)
+				expect(bidhistory.length).to.be.least(1)
+			})
+			it('should find the reversal request refund', async function () {
+				this.retries(5)
+				await wait(10000)
+				bidhistory = await client.database.call('get_account_history', [config.test_account, -1, 10])
+				bidhistory = bidhistory.map((x) => x[1].op[1])
+				bidhistory.forEach((op) => {
+					if (op.memo && op.memo.startsWith('#')) {
+						op.memo = steem.memo.decode(config.test_memo_key, op.memo)
+					}
+				})
+			    console.log(bidhistory.map((op) => op.memo))
+			    console.log(chalk.underline.red('should match: ' + expected_memo2_response))
+				bidhistory = bidhistory.filter((op) => op.memo == expected_memo2_response && op.from == config.account)
+				expect(bidhistory).to.have.length(1)
+			})
 			it('should bid on the test post for the min-bid amount', function (done) {
 				if (already_voted) {
 					// console.log(chalk.italic.red(config.account + ' has already casted a vote on test post'))

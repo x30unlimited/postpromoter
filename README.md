@@ -1,12 +1,19 @@
 # Post Promoter - Steem Bid-Based Voting Bot
 
 ## Fork Features
-  * Mocha test Module
-    Since we are implementing relatively new and complex features, we want to make sure there is a open available testing module to avoid putting at risk accounts.
   * Encrypted memos
   * Reverse bids
-  * Auto account claiming
+  * Auto account claiming </br>
     Since bidbots account will usually sit on large amounts of SP, it is often convinient to expend RC (resource credits) on new accounts.
+  * Mocha test Module
+    Since we are implementing relatively new and complex features, we want to make sure there is a open available testing module so that each user can independently make sure everything works before going into production.
+    Among the tests, these are some of the currently available:
+      * Memo encryption / decryption
+      * dsteem Asynchronous client requests
+      * Bid for vote under min_bid and confirming a refund
+      * Bid for vote and confirming vote
+      * Check via blockchain that refunds have been properly sent
+      * Sending above vote-reversal price and confirming leftovers have been properly refunded
 
 ## Encryted memo configuration
 
