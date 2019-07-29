@@ -7,7 +7,7 @@
     "https://gtg.steem.house:8090"
   ],
   "reversal_mode": false,
-  "reversal_price": 0.25,
+  "reversal_price": 0.10,
   "backup_mode": false,
   "disabled_mode": false,
   "detailed_logging": false,
