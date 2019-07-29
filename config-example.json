@@ -16,6 +16,10 @@
   "memo_key": "your_private_memo_key",
   "posting_key": "your_private_posting_key",
   "active_key": "your_private_active_key",
+  "test_account": "your_testing_account",
+  "test_memo_key": "memo_test_key",
+  "test_posting_key":"`posting_test_key",
+  "test_active_key":"active_test_key",
   "auto_claim_rewards" : true,
   "post_rewards_withdrawal_account": "withdraw_liquid_post_rewards_to_account",
   "min_bid": 0.1,
@@ -70,6 +74,10 @@
     "port": 3000
   },
   "transfer_memos": {
+    "already_reversed": "Vote already reversed for {postURL}",
+    "reversal_leftovers": "Leftovers from reversal request for {postURL}",
+    "reversal_not_found": "The post you request a reversal for could not be found {postURL}",
+    "reversal_not_funds": "Your reversal request sent amount {amount} is not enough for {postURL}. Please send {reversal_price}% of the original bid value to be reversed in STEEM or SBD. This services sends back leftovers, so feel free to send a rough estimation",
     "bot_disabled": "Refund for invalid bid: {amount} - The bot is currently disabled.",
     "below_min_bid": "Refund for invalid bid: {amount} - Min bid amount is {min_bid}.",
     "above_max_bid": "Refund for invalid bid: {amount} - Max bid amount is {max_bid}.",

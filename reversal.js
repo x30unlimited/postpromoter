@@ -1,108 +1,64 @@
-var steem  = require('steem');
+var steem  = require('steem')
+var dsteem = require('dsteem')
 var utils  = require('./utils.js');
 var fs     = require('fs');
 var config = JSON.parse(fs.readFileSync("config.json"));
+var client = new dsteem.Client('https://anyx.io')
 
-function checkAmount(reversal, reversal_price, steem_price, sbd_price) {
-  console.log('checkReversalAmount func activated')
-  let amount              = reversal.amount
-  let currency            = reversal.currency
-  let reversal_amount     = reversal.reversal_amount
-  let reversal_currency   = reversal.reversal_currency
+function checkAmount(bid_amount, reversal_amount, reversal_price, steem_price, sbd_price) {
+
+  let _bid_amount       = parseFloat(bid_amount)
+  let bid_currency      = utils.getCurrency(bid_amount)
+  let _reversal_amount  = parseFloat(reversal_amount)
+  let reversal_currency = utils.getCurrency(reversal_amount)
   
-  let amount_usd          = reversal.currency == 'STEEM' ? amount * steem_price : amount * sbd_price
-  let reversal_amount_usd = reversal_currency == 'STEEM' ? reversal_amount * steem_price : reversal_amount * sbd_price
-  let _reversal_price     = amount_usd * reversal_price
-  let leftovers_usd       = reversal_amount_usd - _reversal_price
+  let bid_usd         = bid_currency == 'STEEM' ? _bid_amount * steem_price : _bid_amount * _reversal_amount
+  let reversal_usd    = reversal_currency == 'STEEM' ? _reversal_amount * steem_price : reversal_amount * sbd_price
+  let _reversal_price = bid_usd * reversal_price
+  let leftovers_usd   = reversal_usd - _reversal_price
 
-  if (reversal_amount_usd == _reversal_price) {
-    console.log('reversal amount matches perfectly the reversal price')
-  } else if (reversal_amount_usd > _reversal_price) {
-    console.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
+  if (reversal_usd == _reversal_price) {
+    utils.log('reversal amount matches perfectly the reversal price')
+  } else if (reversal_usd > _reversal_price) {
+    utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
   } else {
-    console.log('reversal request amount is below the reversal price, sending back funds')
+    utils.log('reversal request amount is below the reversal price, sending back funds')
   }
   return leftovers_usd
 }
 
-function reverseVote(reversal, retries, callback) {
-  utils.log('Reversal func activated');
-  steem.broadcast.vote(config.posting_key, account.name, reversal.author, reversal.permlink, 0, function (err, result) {
-    if (!err && result) {
-      utils.log('Vote reversed for: @' + reversal.author + '/' + reversal.permlink);
-
-      if (callback)
-        callback();
-    } else {
-      logError('Error reversing vote for: @' + reversal.author + '/' + reversal.permlink + ', Error: ' + err);
-
-      // Try again on error
-      if(retries < 2)
-        setTimeout(function() { reverseVote(reversal, retries + 1, callback); }, 10000);
-      else {
-        utils.log('============= Vote reversal transaction failed three times for: @' + reversal.author + '/' + reversal.permlink + ' Reversal Amount: ' + reversal.reversal_amount + ' ' + reversal.reversal_currency + ' ===============');
-        logFailedReversal(reversal, err);
-
-        if (callback)
-          callback();
-      }
+function reverseVote(vote_to_reverse, pubkey, reversal_transfer, retries) {
+  return new Promise((resolve, reject) => {
+    let postURL  = vote_to_reverse.memo.startsWith('#') ? vote_to_reverse.memo.substring(1) : vote_to_reverse.memo
+    let permlink = postURL.substr(postURL.lastIndexOf('/') + 1)
+    const vote   = {
+      'voter': config.account,
+      'author': vote_to_reverse.from,
+      'permlink': permlink,
+      'weight': 0
     }
-  });
-}
-
-function sendReversalComment(reversal) {
-  var content = null;
-
-  if(config.rev_comment_location && config.rev_comment_location != '') {
-    content = fs.readFileSync(config.rev_comment_location, "utf8");
-  } else if (config.promotion_content && config.promotion_content != '') {
-    content = config.promotion_content;
-  }
-
-  // If promotion content is specified in the config then use it to comment on the upvoted post
-  if (content && content != '') {
-
-    // Generate the comment permlink via steemit standard convention
-    var permlink = 're-' + reversal.author.replace(/\./g, '') + '-' + reversal.permlink + '-' + new Date().toISOString().replace(/-|:|\./g, '').toLowerCase();
-
-    // Replace variables in the promotion content
-    // content = content.replace(/\{permlink\}/g, reversal.permlink)
-    content = content.replace(/\{amount\}/g, reversal.amount)
-    content = content.replace(/\{currency\}/g, reversal.currency)
-
-    // Broadcast the comment
-    steem.broadcast.comment(config.posting_key, reversal.author, reversal.permlink, account.name, permlink, permlink, content, '{"app":"postpromoter/' + version + '"}', function (err, result) {
-      if (!err && result) {
-        utils.log('Posted comment: ' + permlink);
-      } else {
-        logError('Error posting comment: ' + permlink);
+    console.log(vote)
+    client.broadcast.vote(vote, dsteem.PrivateKey.fromString(config.posting_key))
+    .then((res) => {
+      utils.log('Vote reversed for: @' + vote_to_reverse.from + permlink);
+      return resolve() 
+    })
+    .catch((err) => {
+      utils.log('Error reversing vote for: @' + vote_to_reverse.from + permlink);
+      let already_reversed_err = 'itr->vote_percent != o.weight: Your current vote on this comment is identical to this vote.'
+      if (err = already_reversed_err) {
+        let memo    = config.transfer_memos['already_reversed']
+        memo        = memo.replace(/{postURL}/g, postURL)
+        utils.log(memo)
+        if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
+        return client.broadcast.transfer({ amount: reversal_transfer.amount, from: config.account, to: reversal_transfer.from , memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
       }
-    });
-  }
-}
-
-function logFailedReversal(reversal, message) {
-  try {
-    message = JSON.stringify(message);
-
-    if (message.indexOf('assert_exception') >= 0 && message.indexOf('ERR_ASSERTION') >= 0)
-      return;
-
-    var failed_reversals = [];
-
-    if(fs.existsSync("failed-reversals.json"))
-      failed_reversals = JSON.parse(fs.readFileSync("failed-reversals.json"));
-
-    reversal.error = message;
-    failed_reversals.push(reversal);
-
-    fs.writeFile('failed-reversals.json', JSON.stringify(failed_reversals), function (err) {
-      if (err)
-        utils.log('Error saving failed reversals to disk: ' + err);
-    });
-  } catch (err) {
-    utils.log(err);
-  }
+      console.log(err)
+      // Try again on error
+      if(retries < 2) setTimeout(() => { reverseVote(vote_to_reverse, retries + 1); }, 10000);
+      else return reject(err)     
+    })
+  })
 }
 
 module.exports = {

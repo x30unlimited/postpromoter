@@ -1,10 +1,18 @@
 # Post Promoter - Steem Bid-Based Voting Bot
 
-## Encryted memo
+## Fork Features
+  * Mocha test Module
+    Since we are implementing relatively new and complex features, we want to make sure there is a open available testing module to avoid putting at risk accounts.
+  * Encrypted memos
+  * Reverse bids
+  * Auto account claiming
+    Since bidbots account will usually sit on large amounts of SP, it is often convinient to expend RC (resource credits) on new accounts.
+
+## Encryted memo configuration
 
 Encrypted memo is enabled out-of-the-box. No configuration required. Upon encrypted memo detection, the postpromoter mechanics downstream will behave normally once memo is decrypted with the bidbot memo key.
 
-## Reversal configuration (steemium fork)
+## Reversal configuration
 
 First, enable the reversal in config file (config.json), setting 'reversal_mode' to `true`. 
 

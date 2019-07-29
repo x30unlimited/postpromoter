@@ -189,7 +189,7 @@ function format(n, c, d, t) {
    return v;
  }
 
- function log(msg) { console.log(new Date().toString() + ' - ' + msg); }
+ function log(msg) { if (process.env.NODE_ENV !== 'test2') console.log(new Date().toString() + ' - ' + msg); }
 
  module.exports = {
    updateSteemVariables: updateSteemVariables,

@@ -25,6 +25,8 @@ var version           = 'postpromoter Steemium Fork - 1.0.0';
 var client            = null;
 var rpc_node          = null;
 
+utils.log('Looks like we are in ' + process.env.NODE_ENV + ' mode')
+
 startup();
 
 function startup() {
@@ -138,7 +140,8 @@ function startProcess() {
       }
 
       // We are at 100% voting power - time to vote!
-      if (vp >= 10000 && outstanding_bids.length > 0 && round_end_timeout < 0) {
+      let min_vp = (process.env.NODE_ENV == 'test') ? 8000 : 10000
+      if (vp >= min_vp && outstanding_bids.length > 0 && round_end_timeout < 0) {
         round_end_timeout = setTimeout(function() {
           round_end_timeout = -1;
 
@@ -361,8 +364,11 @@ function getTransactions(callback) {
         try { 
           bid.memo = steem.memo.decode(config.memo_key, bid.memo)
         }catch(e){
-          utils.log(e)
-          utils.log(bid)
+          // console.log(e)
+          // console.log(bid)
+          let trx_id = result.find((x) => x[1].op[1] == bid)[1].trx_id
+          transactions.push(trx_id)
+          return
         }
       }
     })
@@ -385,7 +391,7 @@ function getTransactions(callback) {
     for (var i = 0; i < result.length; i++) {
       var trans = result[i];
       var op = trans[1].op;
-      var encrypted = false
+
       // Don't need to process virtual ops
       if(trans[1].trx_id == '0000000000000000000000000000000000000000')
         continue;
@@ -406,9 +412,11 @@ function getTransactions(callback) {
 
         // We only care about transfers to the bot
         if (op[0] == 'transfer' && op[1].to == config.account) {
-          var amount   = parseFloat(op[1].amount);
-          var currency = utils.getCurrency(op[1].amount);
-          var memo     = op[1].memo;
+          var amount    = parseFloat(op[1].amount);
+          var currency  = utils.getCurrency(op[1].amount);
+          var memo      = op[1].memo;
+          var encrypted = false
+          var pubkey    = ''
 
           utils.log("Incoming Bid! From: " + op[1].from + ", Amount: " + op[1].amount + ", memo: " + op[1].memo);
 
@@ -417,12 +425,12 @@ function getTransactions(callback) {
           var max_bid = config.max_bid ? parseFloat(config.max_bid) : 9999;
           var max_bid_whitelist = config.max_bid_whitelist ? parseFloat(config.max_bid_whitelist) : 9999;
 
-          if (op[1].memo.startsWith('#')) {
+          if (op[1].memo.startsWith('#')) { // this is weak method to identify encrypted memos => !! to be improved
             utils.log('encrypted memo detected!')
             encrypted = true
             // find user posting public key
             let account = await client.database.call('get_accounts', [[op[1].from]])
-            let pubkey = account[0].memo_key
+            pubkey = account[0].memo_key
           }
 
           // Save the ID of the last transaction that was processed.
@@ -433,69 +441,81 @@ function getTransactions(callback) {
 
           utils.log(memo)
           var wordsArray = memo.split(' ')
-          utils.log(wordsArray)
           if (config.reversal_mode && wordsArray && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
             utils.log('Reversal Memo detected!')
-            utils.log(wordsArray)
+
             var postURL            = wordsArray[1] // this can be problematic if inputs are fromdifferent UIs (steemit vs steampeak)
             var permlink           = postURL.substr(postURL.lastIndexOf('/') + 1)
             var author             = postURL.substring(postURL.lastIndexOf('@') + 1, postURL.lastIndexOf('/'))
-            var match              = bid_history.find((x)=> x.memo === postURL)
+            var match              = bid_history.find((x)=> { return (x.memo.indexOf(postURL) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
+            var vote_to_reverse    = match ? JSON.parse(JSON.stringify(match)) : undefined
             var reversal_requester = op[1].from
             
-            try {
-              utils.log('the post reversal request belongs to @' + match.from + ' for the post ' + match.permlink)
-            } catch(e) {
+            if (vote_to_reverse) {
+              console.log('vote_to_reverse below')
+              console.log(vote_to_reverse)
+              utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
+              let leftovers_usd = reverse.checkAmount(vote_to_reverse.amount, op[1].amount, config.reversal_price, steem_price, sbd_price)
+              if (leftovers_usd < 0) {
+                // send money back => amount is not enough
+                let memo = config.transfer_memos['reversal_not_funds']
+                memo = memo.replace(/{reversal_price}/g, (reversal_price * 100));
+                memo = memo.replace(/{postURL}/g, postURL);
+                memo = memo.replace(/{amount}/g, amount);
+                utils.log(memo)
+                if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
+                client.broadcast.transfer({ amount: utils.format(amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+                transactions.push(trans[1].trx_id)
+                continue
+              } else if (leftovers_usd > 0) { 
+                // send leftovers back
+                let leftovers = (currency == 'STEEM') ? parseFloat(leftovers_usd / steem_price).toFixed(3) : parseFloat(leftovers_usd / sbd_price).toFixed(3)
+                let memo = config.transfer_memos['reversal_leftovers']
+                memo = memo.replace(/{postURL}/g, postURL);
+                utils.log(memo)
+                if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
+                client.broadcast.transfer({ amount: utils.format(leftovers, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+              }
+              reverse.reverseVote(vote_to_reverse, pubkey, op[1], 0)
+              .then(() => {
+                utils.log('reverse Vote finished')
+              })
+              .catch((e) => {
+                console.log(e)
+              })
+              transactions.push(trans[1].trx_id)
+              continue // reversals are not regular bids 
+            } else {
               utils.log('Reversal permlink wasnt found on bid history')
-              let memo = '504: Reversal request refund'
-              client.broadcast.transfer({ amount: utils.format(amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
-              transactions.push(trans[1].trx_id)
-              continue
-            }
-            var reversal = { amount: match.amount, author: author, reversal_requester: reversal_requester, reversal_amount: amount, reversal_currency: currency, permlink: permlink } 
-            console.log(reversal)
-            let leftovers_usd = reverse.checkAmount(reversal, config.reversal_price, steem_price, sbd_price)
-            if (leftovers_usd < 0) {
-              // send money back => amount is not enough
-              let memo = permlink + ' Reversal amount is not enough, the price for reversal is ' + (config.reversal_price * 100) + '% of the original bid. This services sends back leftovers, so feel free to send a rough estimation'
+              let memo = config.transfer_memos['reversal_not_found']
+              memo = memo.replace(/{postURL}/g, postURL);
+              utils.log(memo)
               if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
               client.broadcast.transfer({ amount: utils.format(amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
               transactions.push(trans[1].trx_id)
               continue
-            } else if (leftovers_usd > 0) { 
-              // send leftovers back
-              let leftovers = (currency == 'STEEM') ? parseFloat(leftovers_usd / steem_price).toFixed(3) : parseFloat(leftovers_usd / sbd_price).toFixed(3)
-              let memo = 'Reversal leftovers from ' + permlink
-              if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-              client.broadcast.transfer({ amount: utils.format(leftovers, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
             }
-            reverse.reverseVote(function() {
-              utils.log('reverse Vote finished')
-              transactions.push(trans[1].trx_id)
-              continue // reversals are not regular bids
-            })
           }
           
-
           if(config.disabled_mode) {
             // Bot is disabled, refund all Bids
-            refund(op[1].from, amount, currency, 'bot_disabled');
+            refund(op[1].from, amount, currency, 'bot_disabled', 0, null, pubkey);
           } else if(amount < min_bid) {
             // Bid amount is too low (make sure it's above the min_refund_amount setting)
             if(!config.min_refund_amount || amount >= config.min_refund_amount)
-              refund(op[1].from, amount, currency, 'below_min_bid');
+              refund(op[1].from, amount, currency, 'below_min_bid', 0, null, pubkey);
             else {
               utils.log('Invalid bid - below min bid amount and too small to refund.');
             }
           } else if (amount > max_bid && whitelist.indexOf(op[1].from) < 0) {
             // Bid amount is too high
-            refund(op[1].from, amount, currency, 'above_max_bid');
+            refund(op[1].from, amount, currency, 'above_max_bid', 0, null, pubkey);
           } else if (amount > max_bid_whitelist) {
             // Bid amount is too high even for whitelisted users!
-            refund(op[1].from, amount, currency, 'above_max_bid_whitelist');
+            refund(op[1].from, amount, currency, 'above_max_bid_whitelist', 0, null, pubkey);
           } else if(config.currencies_accepted && config.currencies_accepted.indexOf(currency) < 0) {
             // Sent an unsupported currency
-            refund(op[1].from, amount, currency, 'invalid_currency');
+            refund(op[1].from, amount, currency, 'invalid_currency', 0, null, pubkey);
           } else {
             // Bid amount is just right!
             checkPost(op[1].memo, amount, currency, op[1].from, 0);
@@ -895,7 +915,7 @@ function saveDelegators() {
     });
 }
 
-function refund(sender, amount, currency, reason, retries, data) {
+function refund(sender, amount, currency, reason, retries, data, pubkey) {
   if(config.backup_mode) {
     utils.log('Backup Mode - not sending refund of ' + amount + ' ' + currency + ' to @' + sender + ' for reason: ' + reason);
     return;
@@ -935,7 +955,8 @@ function refund(sender, amount, currency, reason, retries, data) {
   var days = Math.floor(config.max_post_age / 24);
   var hours = (config.max_post_age % 24);
   memo = memo.replace(/{max_age}/g, days + ' Day(s)' + ((hours > 0) ? ' ' + hours + ' Hour(s)' : ''));
-
+  // if the bid was sent encrypted, we encrypt it back
+  if (pubkey && pubkey.length > 1) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
   // Issue the refund.
   client.broadcast.transfer({ amount: utils.format(amount, 3) + ' ' + currency, from: config.account, to: sender, memo: memo }, dsteem.PrivateKey.fromString(config.active_key)).then(function(response) {
     utils.log('Refund of ' + amount + ' ' + currency + ' sent to @' + sender + ' for reason: ' + reason);
@@ -944,7 +965,7 @@ function refund(sender, amount, currency, reason, retries, data) {
 
     // Try again on error
     if(retries < 2)
-      setTimeout(function() { refund(sender, amount, currency, reason, retries + 1, data) }, (Math.floor(Math.random() * 10) + 3) * 1000);
+      setTimeout(function() { refund(sender, amount, currency, reason, retries + 1, data, pubkey) }, (Math.floor(Math.random() * 10) + 3) * 1000);
     else
       utils.log('============= Refund failed three times for: @' + sender + ' ===============');
   });
@@ -1288,6 +1309,30 @@ function logFailedBid(bid, message) {
     fs.writeFile('failed-bids.json', JSON.stringify(failed_bids), function (err) {
       if (err)
         utils.log('Error saving failed bids to disk: ' + err);
+    });
+  } catch (err) {
+    utils.log(err);
+  }
+}
+
+function logFailedReversal(reversal, message) {
+  try {
+    message = JSON.stringify(message);
+
+    if (message.indexOf('assert_exception') >= 0 && message.indexOf('ERR_ASSERTION') >= 0)
+      return;
+
+    var failed_reversals = [];
+
+    if(fs.existsSync("failed-reversals.json"))
+      failed_reversals = JSON.parse(fs.readFileSync("failed-reversals.json"));
+
+    reversal.error = message;
+    failed_reversals.push(reversal);
+
+    fs.writeFile('failed-reversals.json', JSON.stringify(failed_reversals), function (err) {
+      if (err)
+        utils.log('Error saving failed reversals to disk: ' + err);
     });
   } catch (err) {
     utils.log(err);
