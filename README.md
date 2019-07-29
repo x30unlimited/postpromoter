@@ -9,13 +9,13 @@ This fork expands the original postpromoter capabilities with new features, but 
 ## Fork Features
   ### Encrypted memos
   Bids and vote reversal requests can now be both encrypted or unencrypted. Upon encrypted transfers, postpromoter will always answer encrypting the memo.
-  ### Reverse bids
+  ### Reverse votes
   Bidbot owners can now set a price for a vote reversal. For instance, accountA bids for vote on one of its posts. Then accountB sends a vote reversal request for accountA post. 
-  AccountB will actually need to pay only a fraction % of the original bid amount paid by account A.
+  AccountB will need to pay only a fraction % of the original bid amount paid by account A.
   ### Auto account claiming
 Since bidbots account will usually sit on large amounts of SP, it is often convenient to expend RC (resource credits) on new accounts.
   ### Mocha test Module
-Since we are implementing relatively new and complex features, we want to make sure there is a open available testing module so that each user can independently make sure everything works before going into production.
+Tests that will target both original and new features making sure your instance and configuration are ready for production. **Please make sure to add in config.json a test account before running the tests.**
 **Among the tests, these are some of the currently available:**
 * Memo encryption / decryption
 * dsteem Asynchronous client requests

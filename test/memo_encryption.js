@@ -17,7 +17,7 @@ const min_vp = 5000
 console.log(chalk.bgWhite('testing account: @' + config.account + ' | testing bidder account:@' + config.test_account))
 
 function wait (seconds) {
-	let spinner = ora('waiting ' + seconds/1000 + ' seconds').start();
+	let spinner = ora('waiting ' + seconds/1000 + ' seconds\n').start();
 	return new Promise((resolve, reject) => {
 		setTimeout(() => {
 			resolve()
