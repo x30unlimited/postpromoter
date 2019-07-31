@@ -12,7 +12,7 @@ function checkAmount(bid_amount, reversal_amount, reversal_price, steem_price, s
   let _reversal_amount  = parseFloat(reversal_amount)
   let reversal_currency = utils.getCurrency(reversal_amount)
   
-  let bid_usd         = bid_currency == 'STEEM' ? _bid_amount * steem_price : _bid_amount * _reversal_amount
+  let bid_usd         = bid_currency == 'STEEM' ? _bid_amount * steem_price : _bid_amount * sbd_price
   let reversal_usd    = reversal_currency == 'STEEM' ? _reversal_amount * steem_price : reversal_amount * sbd_price
   let _reversal_price = bid_usd * reversal_price
   let leftovers_usd   = reversal_usd - _reversal_price
@@ -22,7 +22,7 @@ function checkAmount(bid_amount, reversal_amount, reversal_price, steem_price, s
   } else if (reversal_usd > _reversal_price) {
     utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
   } else {
-    utils.log('reversal request amount is below the reversal price, sending back funds')
+    utils.log('reversal request is missing ' + leftovers_usd + '$, sending back funds')
   }
   return leftovers_usd
 }
