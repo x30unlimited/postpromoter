@@ -447,7 +447,7 @@ function getTransactions(callback) {
             var postURL            = wordsArray[1] // this can be problematic if inputs are fromdifferent UIs (steemit vs steampeak)
             var permlink           = postURL.substr(postURL.lastIndexOf('/') + 1)
             var author             = postURL.substring(postURL.lastIndexOf('@') + 1, postURL.lastIndexOf('/'))
-            var match              = bid_history.find((x)=> { return (x.memo.indexOf(postURL) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
+            var match              = bid_history.find((x)=> { return (x.memo.indexOf(permlink) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
             var vote_to_reverse    = match ? JSON.parse(JSON.stringify(match)) : undefined
             var reversal_requester = op[1].from
             
@@ -677,8 +677,8 @@ function checkPost(memo, amount, currency, sender, retries) {
   }
 
   // Parse the author and permlink from the memo URL
-  var permLink = memo.substr(memo.lastIndexOf('/') + 1);
-  var site = memo.substring(memo.indexOf('://')+3,memo.indexOf('/', memo.indexOf('://')+3));
+    var permLink = memo.substr(memo.lastIndexOf('/') + 1);
+    var site = memo.substring(memo.indexOf('://')+3,memo.indexOf('/', memo.indexOf('://')+3));
   switch(site) {
     case 'd.tube':
         var author = memo.substring(memo.indexOf("/v/")+3,memo.lastIndexOf('/'));
