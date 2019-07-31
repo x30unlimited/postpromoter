@@ -475,13 +475,14 @@ function getTransactions(callback) {
               } else if (leftovers_usd > 0) { 
                 // send leftovers back
                 let leftovers = (currency == 'STEEM') ? parseFloat(leftovers_usd / steem_price).toFixed(3) : parseFloat(leftovers_usd / sbd_price).toFixed(3)
+                leftovers = utils.format(leftovers, 3) + ' ' + currency
                 let memo = config.transfer_memos['reversal_leftovers']
                 memo = memo.replace(/{postURL}/g, postURL);
                 utils.log(memo)
                 if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-                client.broadcast.transfer({ amount: utils.format(leftovers, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+                client.broadcast.transfer({ amount: leftovers, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
               }
-              reverse.reverseVote(vote_to_reverse, pubkey, op[1], 0)
+              reverse.reverseVote(vote_to_reverse, leftovers, pubkey, op[1], 0)
               .then(() => {
                 utils.log('reverse Vote finished')
               })
