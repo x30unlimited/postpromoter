@@ -27,19 +27,7 @@ var rpc_node          = null;
 
 utils.log('Looks like we are in ' + process.env.NODE_ENV + ' mode')
 
-// startup();
-test()
-async function test () {
-  let client = new dsteem.Client('https://anyx.io')
-  let bid_history  = await client.database.call('get_account_history', ['promobot', -1, 1000])
-  bid_history = bid_history.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == 'promobot') }).map((x) => x[1].op[1])
-  var postURL  = 'https://steemit.com/dtube/@crystalliu/h9bpto6i832'
-  var permlink = postURL.substr(postURL.lastIndexOf('/') + 1)
-  var match    = bid_history.find((x)=> { return (x.memo.indexOf(permlink) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
-  console.log(bid_history.length)
-  var vote_to_reverse    = match ? JSON.parse(JSON.stringify(match)) : undefined
-  console.log(vote_to_reverse)
-}
+startup();
 
 function startup() {
   // Load the settings from the config file
