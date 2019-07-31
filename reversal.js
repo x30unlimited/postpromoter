@@ -50,7 +50,7 @@ function reverseVote(vote_to_reverse, leftovers, pubkey, reversal_transfer, retr
         let memo    = config.transfer_memos['already_reversed']
         memo        = memo.replace(/{postURL}/g, postURL)
         utils.log(memo)
-        let amount = reversal_transfer.amount - leftovers
+        let amount = parseFloat(reversal_transfer.amount - leftovers).toFixed(3)
         if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
         return client.broadcast.transfer({ amount: amount, from: config.account, to: reversal_transfer.from , memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
       }
