@@ -27,7 +27,19 @@ var rpc_node          = null;
 
 utils.log('Looks like we are in ' + process.env.NODE_ENV + ' mode')
 
-startup();
+// startup();
+test()
+async function test () {
+  let client = new dsteem.Client('https://anyx.io')
+  let bid_history  = await client.database.call('get_account_history', ['promobot', -1, 1000])
+  bid_history = bid_history.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == 'promobot') }).map((x) => x[1].op[1])
+  var postURL  = 'https://steemit.com/dtube/@crystalliu/h9bpto6i832'
+  var permlink = postURL.substr(postURL.lastIndexOf('/') + 1)
+  var match    = bid_history.find((x)=> { return (x.memo.indexOf(permlink) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
+  console.log(bid_history.length)
+  var vote_to_reverse    = match ? JSON.parse(JSON.stringify(match)) : undefined
+  console.log(vote_to_reverse)
+}
 
 function startup() {
   // Load the settings from the config file
@@ -447,10 +459,16 @@ function getTransactions(callback) {
             var postURL            = wordsArray[1] // this can be problematic if inputs are fromdifferent UIs (steemit vs steampeak)
             var permlink           = postURL.substr(postURL.lastIndexOf('/') + 1)
             var author             = postURL.substring(postURL.lastIndexOf('@') + 1, postURL.lastIndexOf('/'))
+            var reversal_requester = op[1].from
             var match              = bid_history.find((x)=> { return (x.memo.indexOf(permlink) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
             var vote_to_reverse    = match ? JSON.parse(JSON.stringify(match)) : undefined
-            var reversal_requester = op[1].from
             
+            if (!vote_to_reverse && !first_load) { // second chance for reversal trying to find the bid with a deeper request
+              bid_history     = await client.database.call('get_account_history', [account.name, -1, 1000]).filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == config.account) }).map((x) => x[1].op[1])
+              match           = bid_history.find((x)=> { return (x.memo.indexOf(permlink) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
+              vote_to_reverse = match ? JSON.parse(JSON.stringify(match)) : undefined
+            }
+
             if (vote_to_reverse) {
               utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
               let leftovers_usd = reverse.checkAmount(vote_to_reverse.amount, op[1].amount, config.reversal_price, steem_price, sbd_price)
