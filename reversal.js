@@ -13,7 +13,7 @@ function checkAmount(bid_amount, reversal_amount, reversal_price, steem_price, s
   let reversal_currency = utils.getCurrency(reversal_amount)
   
   let bid_usd         = bid_currency == 'STEEM' ? _bid_amount * steem_price : _bid_amount * sbd_price
-  let reversal_usd    = reversal_currency == 'STEEM' ? _reversal_amount * steem_price : reversal_amount * sbd_price
+  let reversal_usd    = reversal_currency == 'STEEM' ? _reversal_amount * steem_price : _reversal_amount * sbd_price
   let _reversal_price = bid_usd * reversal_price
   let leftovers_usd   = reversal_usd - _reversal_price
 
