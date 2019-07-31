@@ -450,7 +450,8 @@ function getTransactions(callback) {
             var reversal_requester = op[1].from
             var match              = bid_history.find((x)=> { return (x.memo.indexOf(permlink) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
             var vote_to_reverse    = match ? JSON.parse(JSON.stringify(match)) : undefined
-            
+            var leftovers          = 0
+
             if (!vote_to_reverse && !first_load) { // second chance for reversal trying to find the bid with a deeper request
               bid_history     = await client.database.call('get_account_history', [account.name, -1, 1000])
               bid_history     = bid_history.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == config.account) }).map((x) => x[1].op[1])
@@ -474,7 +475,7 @@ function getTransactions(callback) {
                 continue
               } else if (leftovers_usd > 0) { 
                 // send leftovers back
-                let leftovers = (currency == 'STEEM') ? parseFloat(leftovers_usd / steem_price).toFixed(3) : parseFloat(leftovers_usd / sbd_price).toFixed(3)
+                leftovers = (currency == 'STEEM') ? parseFloat(leftovers_usd / steem_price).toFixed(3) : parseFloat(leftovers_usd / sbd_price).toFixed(3)
                 leftovers = utils.format(leftovers, 3) + ' ' + currency
                 let memo = config.transfer_memos['reversal_leftovers']
                 memo = memo.replace(/{postURL}/g, postURL);
