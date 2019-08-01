@@ -17,13 +17,6 @@ function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_pric
   let _reversal_price = bid_usd * reversal_price
   let leftovers_usd   = reversal_usd - _reversal_price
 
-  if (reversal_usd == _reversal_price) {
-    utils.log('reversal amount matches perfectly the reversal price')
-  } else if (reversal_usd > _reversal_price) {
-    utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd + ' after reverse vote confirmation')
-  } else {
-    utils.log('reversal request is missing ' + leftovers_usd + '$, sending back funds')
-  }
   return leftovers_usd
 }
 
@@ -37,7 +30,7 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
       'permlink': permlink,
       'weight': 0
     }
-    console.log(vote)
+    // console.log(vote)
     client.broadcast.vote(vote, dsteem.PrivateKey.fromString(config.posting_key))
     .then((res) => {
       utils.log('Vote reversed for: @' + vote_to_reverse.from + permlink);
