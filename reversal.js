@@ -48,6 +48,7 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
       return resolve() 
     })
     .catch((err) => {
+      console.log(err)
       utils.log('Error reversing vote for: @' + vote_to_reverse.from + permlink);
       let already_reversed_err = 'itr->vote_percent != o.weight: Your current vote on this comment is identical to this vote.'
       if (err = already_reversed_err) {
@@ -57,7 +58,6 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
         if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
         return client.broadcast.transfer({ amount: reversal_transfer.amount, from: config.account, to: reversal_transfer.from , memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
       }
-      console.log(err)
       // Try again on error
       if(retries < 2) setTimeout(() => { reverseVote(vote_to_reverse, retries + 1); }, 10000);
       else return reject(err)     

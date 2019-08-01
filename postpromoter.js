@@ -473,9 +473,6 @@ function getTransactions(callback) {
                 continue
               }
               reverse.reverseVote(vote_to_reverse, leftovers_usd, pubkey, op[1], 0)
-              .then(() => {
-                utils.log('reverse Vote finished')
-              })
               .catch((e) => {
                 console.log(e)
               })
