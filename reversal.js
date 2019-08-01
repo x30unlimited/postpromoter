@@ -29,7 +29,7 @@ function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_pric
     memo = memo.replace(/{amount}/g, reversal_transfer.amount);
     utils.log(memo)
     if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-    client.broadcast.transfer({ amount: utils.format(reversal_amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+    client.broadcast.transfer({ amount: reversal_transfer.amount, from: config.account, to: reversal_transfer.from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
   } else {
     utils.log('reversal request is missing ' + leftovers_usd + '$, sending back funds')
   }
@@ -50,6 +50,8 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
     client.broadcast.vote(vote, dsteem.PrivateKey.fromString(config.posting_key))
     .then((res) => {
       utils.log('Vote reversed for: @' + vote_to_reverse.from + permlink);
+      // if no leftovers we close here
+      if (leftovers_usd == 0) return resolve()
       // send leftovers back
       let currency = utils.getCurrency(reversal_transfer.amount)
       let leftovers = (currency == 'STEEM') ? leftovers_usd / steem_price : leftovers_usd / sbd_price
