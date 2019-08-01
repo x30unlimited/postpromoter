@@ -460,7 +460,7 @@ function getTransactions(callback) {
 
             if (vote_to_reverse) {
               utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
-              let leftovers_usd = reverse.checkAmount(vote_to_reverse, op[1], config.reversal_price, steem_price, sbd_price)
+              let leftovers_usd = reverse.checkAmount(vote_to_reverse, op[1], config.reversal_price, steem_price, sbd_price, pubkey)
               if (leftovers_usd < 0) {
                 transactions.push(trans[1].trx_id)
                 continue

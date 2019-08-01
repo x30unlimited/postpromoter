@@ -5,10 +5,10 @@ var fs     = require('fs');
 var config = JSON.parse(fs.readFileSync("config.json"));
 var client = new dsteem.Client('https://anyx.io')
 
-function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_price, sbd_price) {
+function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_price, sbd_price, pubkey) {
 
   let bid_amount       = parseFloat(bid_transfer.amount)
-  let bid_currency      = utils.getCurrency(bid_transfer.amount)
+  let bid_currency      = utils.getCurrency(bid_transfer.amounty)
   let reversal_amount  = parseFloat(reversal_transfer.amount)
   let reversal_currency = utils.getCurrency(reversal_transfer.amount)
   
@@ -20,7 +20,7 @@ function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_pric
   if (reversal_usd == _reversal_price) {
     utils.log('reversal amount matches perfectly the reversal price')
   } else if (reversal_usd > _reversal_price) {
-    // utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
+    utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
     // send money back => amount is not enough
     let postURL = reversal_transfer.memo.split(' ')[1]
     let memo = config.transfer_memos['reversal_not_funds']
@@ -28,7 +28,7 @@ function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_pric
     memo = memo.replace(/{postURL}/g, postURL);
     memo = memo.replace(/{amount}/g, reversal_transfer.amount);
     utils.log(memo)
-    if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
+    if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
     client.broadcast.transfer({ amount: utils.format(reversal_amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
   } else {
     utils.log('reversal request is missing ' + leftovers_usd + '$, sending back funds')
