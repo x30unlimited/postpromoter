@@ -20,16 +20,7 @@ function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_pric
   if (reversal_usd == _reversal_price) {
     utils.log('reversal amount matches perfectly the reversal price')
   } else if (reversal_usd > _reversal_price) {
-    utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
-    // send money back => amount is not enough
-    let postURL = reversal_transfer.memo.split(' ')[1]
-    let memo = config.transfer_memos['reversal_not_funds']
-    memo = memo.replace(/{reversal_price}/g, (reversal_price * 100));
-    memo = memo.replace(/{postURL}/g, postURL);
-    memo = memo.replace(/{amount}/g, reversal_transfer.amount);
-    utils.log(memo)
-    if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-    client.broadcast.transfer({ amount: reversal_transfer.amount, from: config.account, to: reversal_transfer.from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+    utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd + ' after reverse vote confirmation')
   } else {
     utils.log('reversal request is missing ' + leftovers_usd + '$, sending back funds')
   }

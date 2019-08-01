@@ -462,6 +462,13 @@ function getTransactions(callback) {
               utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
               let leftovers_usd = reverse.checkAmount(vote_to_reverse, op[1], config.reversal_price, steem_price, sbd_price, pubkey)
               if (leftovers_usd < 0) {
+                let memo = config.transfer_memos['reversal_not_funds']
+                memo = memo.replace(/{reversal_price}/g, (reversal_price * parseFloat(vote_to_reverse.amount)) + ' ' + utils.getCurrency(vote_to_reverse.amount));
+                memo = memo.replace(/{postURL}/g, postURL);
+                // memo = memo.replace(/{amount}/g, reversal_transfer.amount);
+                utils.log(memo)
+                if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
+                client.broadcast.transfer({ amount: op[1].amount, from: config.account, to: reversal_transfer.from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
                 transactions.push(trans[1].trx_id)
                 continue
               }
