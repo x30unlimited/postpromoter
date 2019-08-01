@@ -5,15 +5,15 @@ var fs     = require('fs');
 var config = JSON.parse(fs.readFileSync("config.json"));
 var client = new dsteem.Client('https://anyx.io')
 
-function checkAmount(bid_amount, reversal_amount, reversal_price, steem_price, sbd_price) {
+function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_price, sbd_price) {
 
-  let _bid_amount       = parseFloat(bid_amount)
+  let bid_amount       = parseFloat(bid_transfer.amount)
   let bid_currency      = utils.getCurrency(bid_amount)
-  let _reversal_amount  = parseFloat(reversal_amount)
+  let reversal_amount  = parseFloat(reversal_transfer.amount)
   let reversal_currency = utils.getCurrency(reversal_amount)
   
-  let bid_usd         = bid_currency == 'STEEM' ? _bid_amount * steem_price : _bid_amount * sbd_price
-  let reversal_usd    = reversal_currency == 'STEEM' ? _reversal_amount * steem_price : _reversal_amount * sbd_price
+  let bid_usd         = bid_currency == 'STEEM' ? bid_amount * steem_price : bid_amount * sbd_price
+  let reversal_usd    = reversal_currency == 'STEEM' ? reversal_amount * steem_price : reversal_amount * sbd_price
   let _reversal_price = bid_usd * reversal_price
   let leftovers_usd   = reversal_usd - _reversal_price
 
@@ -22,10 +22,11 @@ function checkAmount(bid_amount, reversal_amount, reversal_price, steem_price, s
   } else if (reversal_usd > _reversal_price) {
     // utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
     // send money back => amount is not enough
+    let postURL = reversal_transfer.memo.split(' ')[1]
     let memo = config.transfer_memos['reversal_not_funds']
     memo = memo.replace(/{reversal_price}/g, (reversal_price * 100));
     memo = memo.replace(/{postURL}/g, postURL);
-    memo = memo.replace(/{amount}/g, amount);
+    memo = memo.replace(/{amount}/g, reversal_transfer.amount);
     utils.log(memo)
     if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
     client.broadcast.transfer({ amount: utils.format(reversal_amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
