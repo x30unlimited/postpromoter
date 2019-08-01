@@ -450,7 +450,6 @@ function getTransactions(callback) {
             var reversal_requester = op[1].from
             var match              = bid_history.find((x)=> { return (x.memo.indexOf(permlink) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
             var vote_to_reverse    = match ? JSON.parse(JSON.stringify(match)) : undefined
-            var leftovers          = 0
 
             if (!vote_to_reverse && !first_load) { // second chance for reversal trying to find the bid with a deeper request
               bid_history     = await client.database.call('get_account_history', [account.name, -1, 1000])
@@ -463,27 +462,10 @@ function getTransactions(callback) {
               utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
               let leftovers_usd = reverse.checkAmount(vote_to_reverse.amount, op[1].amount, config.reversal_price, steem_price, sbd_price)
               if (leftovers_usd < 0) {
-                // send money back => amount is not enough
-                let memo = config.transfer_memos['reversal_not_funds']
-                memo = memo.replace(/{reversal_price}/g, (reversal_price * 100));
-                memo = memo.replace(/{postURL}/g, postURL);
-                memo = memo.replace(/{amount}/g, amount);
-                utils.log(memo)
-                if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-                client.broadcast.transfer({ amount: utils.format(amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
                 transactions.push(trans[1].trx_id)
                 continue
-              } else if (leftovers_usd > 0) { 
-                // send leftovers back
-                leftovers = (currency == 'STEEM') ? leftovers_usd / steem_price : leftovers_usd / sbd_price
-                let _leftovers = parseFloat(leftovers).toFixed(3) + ' ' + currency
-                let memo = config.transfer_memos['reversal_leftovers']
-                memo = memo.replace(/{postURL}/g, postURL);
-                utils.log(memo)
-                if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-                client.broadcast.transfer({ amount: _leftovers, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
               }
-              reverse.reverseVote(vote_to_reverse, leftovers, pubkey, op[1], 0)
+              reverse.reverseVote(vote_to_reverse, leftovers_usd, pubkey, op[1], 0)
               .then(() => {
                 utils.log('reverse Vote finished')
               })

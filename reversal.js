@@ -20,14 +20,22 @@ function checkAmount(bid_amount, reversal_amount, reversal_price, steem_price, s
   if (reversal_usd == _reversal_price) {
     utils.log('reversal amount matches perfectly the reversal price')
   } else if (reversal_usd > _reversal_price) {
-    utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
+    // utils.log('reversal amount exceedes the price of the reversal, sending back leftovers: $' + leftovers_usd)
+    // send money back => amount is not enough
+    let memo = config.transfer_memos['reversal_not_funds']
+    memo = memo.replace(/{reversal_price}/g, (reversal_price * 100));
+    memo = memo.replace(/{postURL}/g, postURL);
+    memo = memo.replace(/{amount}/g, amount);
+    utils.log(memo)
+    if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
+    client.broadcast.transfer({ amount: utils.format(reversal_amount, 3) + ' ' + currency, from: config.account, to: reversal_requester, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
   } else {
     utils.log('reversal request is missing ' + leftovers_usd + '$, sending back funds')
   }
   return leftovers_usd
 }
 
-function reverseVote(vote_to_reverse, leftovers, pubkey, reversal_transfer, retries) {
+function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, retries) {
   return new Promise((resolve, reject) => {
     let postURL  = vote_to_reverse.memo.startsWith('#') ? vote_to_reverse.memo.substring(1) : vote_to_reverse.memo
     let permlink = postURL.substr(postURL.lastIndexOf('/') + 1)
@@ -41,6 +49,15 @@ function reverseVote(vote_to_reverse, leftovers, pubkey, reversal_transfer, retr
     client.broadcast.vote(vote, dsteem.PrivateKey.fromString(config.posting_key))
     .then((res) => {
       utils.log('Vote reversed for: @' + vote_to_reverse.from + permlink);
+      // send leftovers back
+      let currency = utils.getCurrency(reversal_transfer.amount)
+      let leftovers = (currency == 'STEEM') ? leftovers_usd / steem_price : leftovers_usd / sbd_price
+      leftovers = parseFloat(leftovers).toFixed(3) + ' ' + currency
+      let memo = config.transfer_memos['reversal_leftovers']
+      memo = memo.replace(/{postURL}/g, postURL);
+      utils.log(memo)
+      if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
+      client.broadcast.transfer({ amount: leftovers, from: config.account, to: reversal_transfer.from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
       return resolve() 
     })
     .catch((err) => {
@@ -50,11 +67,8 @@ function reverseVote(vote_to_reverse, leftovers, pubkey, reversal_transfer, retr
         let memo    = config.transfer_memos['already_reversed']
         memo        = memo.replace(/{postURL}/g, postURL)
         utils.log(memo)
-        let amount = parseFloat(parseFloat(reversal_transfer.amount) - leftovers).toFixed(3)
-        let currency = utils.getCurrency(reversal_transfer.amount)
-        amount = amount + ' ' + currency
         if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-        return client.broadcast.transfer({ amount: amount, from: config.account, to: reversal_transfer.from , memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+        return client.broadcast.transfer({ amount: reversal_transfer.amount, from: config.account, to: reversal_transfer.from , memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
       }
       console.log(err)
       // Try again on error
