@@ -1,9 +1,11 @@
-var fs       = require("fs");
-var request  = require("request");
-var steem    = require('steem');
-var dsteem   = require('dsteem');
-var utils    = require('./utils');
-var reverse  = require('./reversal')
+var fs        = require("fs");
+var request   = require("request");
+var steem     = require('steem');
+var dsteem    = require('dsteem');
+var utils     = require('./utils');
+var reverse   = require('./reversal')
+var claim_acc = require('./claim_account')
+
 
 var account           = null;
 var transactions      = [];
@@ -30,6 +32,7 @@ utils.log('Looks like we are in ' + process.env.NODE_ENV + ' mode')
 startup();
 
 function startup() {
+
   // Load the settings from the config file
   loadConfig();
 

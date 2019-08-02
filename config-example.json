@@ -8,6 +8,7 @@
   ],
   "reversal_mode": false,
   "reversal_price": 0.10,
+  "claimAccountCountdown": 1,
   "backup_mode": false,
   "disabled_mode": false,
   "detailed_logging": false,
