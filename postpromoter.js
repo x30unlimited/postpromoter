@@ -451,7 +451,11 @@ function getTransactions(callback) {
             var permlink           = postURL.substr(postURL.lastIndexOf('/') + 1)
             var author             = postURL.substring(postURL.lastIndexOf('@') + 1, postURL.lastIndexOf('/'))
             var reversal_requester = op[1].from
-            var match              = bid_history.find((x)=> { return (x.memo.indexOf(permlink) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
+            var match              = bid_history.find((x)=> {
+              let bid_permlink = x.memo.substr(x.memo.lastIndexOf('/') + 1)
+              let bid_author   = x.memo.substring(x.memo.lastIndexOf('@') + 1, x.memo.lastIndexOf('/'))
+              return (bid_permlink == permlink && bid_author == author && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) 
+            })
             var vote_to_reverse    = match ? JSON.parse(JSON.stringify(match)) : undefined
 
             if (!vote_to_reverse && !first_load) { // second chance for reversal trying to find the bid with a deeper request
@@ -459,7 +463,7 @@ function getTransactions(callback) {
               bid_history     = bid_history.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == config.account) }).map((x) => x[1].op[1])
               match           = bid_history.find((x)=> {
                 let bid_permlink = x.memo.substr(x.memo.lastIndexOf('/') + 1)
-                let bid_author = x.memo.substring(x.memo.lastIndexOf('@') + 1, x.memo.lastIndexOf('/'))
+                let bid_author   = x.memo.substring(x.memo.lastIndexOf('@') + 1, x.memo.lastIndexOf('/'))
                 return (bid_permlink == permlink && bid_author == author && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) 
               })
               vote_to_reverse = match ? JSON.parse(JSON.stringify(match)) : undefined
