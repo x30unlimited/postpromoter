@@ -454,7 +454,7 @@ function getTransactions(callback) {
             var match              = bid_history.find((x)=> {
               let bid_permlink = x.memo.substr(x.memo.lastIndexOf('/') + 1)
               let bid_author   = x.memo.substring(x.memo.lastIndexOf('@') + 1, x.memo.lastIndexOf('/'))
-              return (bid_permlink == permlink && bid_author == author && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) 
+              return (bid_permlink == permlink && bid_author == author && x.memo.indexOf('reverse') == -1) 
             })
             var vote_to_reverse    = match ? JSON.parse(JSON.stringify(match)) : undefined
 
@@ -464,7 +464,7 @@ function getTransactions(callback) {
               match           = bid_history.find((x)=> {
                 let bid_permlink = x.memo.substr(x.memo.lastIndexOf('/') + 1)
                 let bid_author   = x.memo.substring(x.memo.lastIndexOf('@') + 1, x.memo.lastIndexOf('/'))
-                return (bid_permlink == permlink && bid_author == author && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) 
+                return (bid_permlink == permlink && bid_author == author && x.memo.indexOf('reverse') == -1) 
               })
               vote_to_reverse = match ? JSON.parse(JSON.stringify(match)) : undefined
             }
