@@ -483,7 +483,7 @@ function getTransactions(callback) {
                 transactions.push(trans[1].trx_id)
                 continue
               }
-              reverse.reverseVote(vote_to_reverse, leftovers_usd, pubkey, op[1], 0)
+              reverse.reverseVote(vote_to_reverse, leftovers_usd, pubkey, op[1], steem_price, sbd_price, 0)
               .catch((e) => {
                 console.log(e)
               })

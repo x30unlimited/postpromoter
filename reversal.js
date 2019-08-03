@@ -20,7 +20,7 @@ function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_pric
   return leftovers_usd
 }
 
-function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, retries) {
+function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, steem_price, sbd_price, retries) {
   return new Promise((resolve, reject) => {
     let postURL  = vote_to_reverse.memo.startsWith('#') ? vote_to_reverse.memo.substring(1) : vote_to_reverse.memo
     let permlink = postURL.substr(postURL.lastIndexOf('/') + 1)
@@ -45,23 +45,24 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
       utils.log(memo)
       if (encrypted) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
       client.broadcast.transfer({ amount: leftovers, from: config.account, to: reversal_transfer.from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+      .catch((err) => {
+        console.log(err)
+        utils.log('Error reversing vote for: @' + vote_to_reverse.from + permlink);
+        let already_reversed_err = 'itr->vote_percent != o.weight: Your current vote on this comment is identical to this vote.'
+        if (err = already_reversed_err) {
+          let memo    = config.transfer_memos['already_reversed']
+          memo        = memo.replace(/{postURL}/g, postURL)
+          utils.log(memo)
+          if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
+          return client.broadcast.transfer({ amount: reversal_transfer.amount, from: config.account, to: reversal_transfer.from , memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+        }
+        // Try again on error
+        if(retries < 2) setTimeout(() => { reverseVote(vote_to_reverse, retries + 1); }, 10000);
+        else return reject(err)     
+      })
       return resolve() 
     })
-    .catch((err) => {
-      console.log(err)
-      utils.log('Error reversing vote for: @' + vote_to_reverse.from + permlink);
-      let already_reversed_err = 'itr->vote_percent != o.weight: Your current vote on this comment is identical to this vote.'
-      if (err = already_reversed_err) {
-        let memo    = config.transfer_memos['already_reversed']
-        memo        = memo.replace(/{postURL}/g, postURL)
-        utils.log(memo)
-        if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-        return client.broadcast.transfer({ amount: reversal_transfer.amount, from: config.account, to: reversal_transfer.from , memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
-      }
-      // Try again on error
-      if(retries < 2) setTimeout(() => { reverseVote(vote_to_reverse, retries + 1); }, 10000);
-      else return reject(err)     
-    })
+
   })
 }
 
