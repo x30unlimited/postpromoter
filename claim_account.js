@@ -3,6 +3,7 @@ var config                = JSON.parse(fs.readFileSync("config.json"));
 const SEC                 = 1000, MIN = SEC * 60, HOUR = MIN * 60
 var dsteem				  = require('dsteem')
 var utils                 = require('./utils.js')
+var client				  = new dsteem.Client('https://api.steemit.com')
 
 let current_hour          = new Date().getHours()
 let current_min           = new Date().getMinutes()
@@ -11,7 +12,7 @@ utils.log('claimAccount func will start in ' + claimAccountCountdown / MIN + ' m
 
 setTimeout(function(){claimAccount()}, claimAccountCountdown)
 
-async function claimAccount (client) {
+async function claimAccount () {
 	utils.log('claiming account')
 	const claim_op = [ "claim_account", { creator: config.account, fee: "0.000 STEEM", extensions: [] } ]
 	var ops = []
@@ -20,7 +21,7 @@ async function claimAccount (client) {
 	client.broadcast.sendOperations(ops, dsteem.PrivateKey.fromString(config.active_key))
 	.then((res) => console.log(res))
 	.catch((e) => utils.logger.error(e))
-	setTimeout(function(){claimAccount()}, 1.5 * HOUR)
+	setTimeout(function(){claimAccount()}, config.claimAccountCountdown * HOUR)
 }
 
 module.exports = {
