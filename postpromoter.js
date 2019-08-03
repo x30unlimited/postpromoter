@@ -457,7 +457,11 @@ function getTransactions(callback) {
             if (!vote_to_reverse && !first_load) { // second chance for reversal trying to find the bid with a deeper request
               bid_history     = await client.database.call('get_account_history', [account.name, -1, 1000])
               bid_history     = bid_history.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == config.account) }).map((x) => x[1].op[1])
-              match           = bid_history.find((x)=> { return (x.memo.indexOf(permlink) > -1 && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) })
+              match           = bid_history.find((x)=> {
+                let bid_permlink = x.memo.substr(x.memo.lastIndexOf('/') + 1)
+                let bid_author = x.memo.substring(x.memo.lastIndexOf('@') + 1, x.memo.lastIndexOf('/'))
+                return (bid_permlink == permlink && bid_author == author && x.memo.indexOf('reverse') == -1 && x.hasOwnProperty('amount')) 
+              })
               vote_to_reverse = match ? JSON.parse(JSON.stringify(match)) : undefined
             }
 
