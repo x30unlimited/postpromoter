@@ -8,9 +8,12 @@ var client				  = new dsteem.Client('https://api.steemit.com')
 let current_hour          = new Date().getHours()
 let current_min           = new Date().getMinutes()
 let claimAccountCountdown = (current_hour % config.claimAccountCountdown) * HOUR  + current_min * MIN
-utils.log('claimAccount func will start in ' + claimAccountCountdown / MIN + ' min')
 
-if (config.claim_account_enabled) setTimeout(function(){claimAccount()}, claimAccountCountdown)
+
+if (config.claim_account_enabled) {
+	utils.log('claimAccount func will start in ' + claimAccountCountdown / MIN + ' min')
+	setTimeout(function(){claimAccount()}, claimAccountCountdown)
+}
 
 async function claimAccount () {
 	utils.log('claiming account')
