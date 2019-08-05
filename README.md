@@ -31,7 +31,7 @@ Since bidbots account will usually sit on large amounts of SP, it is often conve
 
 Enable it under `account_claim_enabled`and set a refresh rate at `claimAccountCountdown`in hours.
 
-** In order to avoid depleting temporarily your account Resource Credits (RC) it is recommeded to set a conservative `claimAccountCountdown`value at first**
+**In order to avoid depleting temporarily your account Resource Credits (RC) it is recommeded to set a conservative `claimAccountCountdown`value at first**
 
   ### Reverse votes
 Bidbot owners can now set a price for a vote reversal. For instance, *accountA* bids for vote on one of its posts. Then *accountB* sends a vote reversal request for accountA post. 
