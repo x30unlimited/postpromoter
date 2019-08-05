@@ -79,6 +79,8 @@
   },
   "transfer_memos": {
     "504": "504",
+    "create_acc": "@{name} account creation succeeded. Leftovers included.",
+    "invalid_formatting": "Invalid memo formatting",
     "create_acc_taken": "{name} is already taken.",
     "create_acc_insufficient": "Please send at {create_account_price_usd}$ for account creation (Leftovers will be sent back automatically)",
     "already_reversed": "Vote already reversed for {postURL}",

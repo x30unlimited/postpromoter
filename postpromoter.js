@@ -471,6 +471,12 @@ function getTransactions(callback) {
             }
             // vote reversal
             if (vote_to_reverse) {
+              // check if memo formatting is right
+              if (wordsArray.length !== 2) {
+                refund(op[1].from, amount, currency, 'invalid_formatting', 0, null, pubkey);
+                transactions.push(trans[1].trx_id)
+                continue     
+              }
               utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
               let leftovers_usd = reverse.checkAmount(vote_to_reverse, op[1], config.reversal_price, steem_price, sbd_price, pubkey)
               if (leftovers_usd < 0) {
@@ -502,7 +508,13 @@ function getTransactions(callback) {
             }
           }
           // account creation
-          if (config.create_account_enabled && wordsArray && wordsArray.length == 2 && wordsArray[0].indexOf('createaccount') > -1) {
+          if (config.create_account_enabled && wordsArray && wordsArray[0].indexOf('createaccount') > -1) {
+            // check if memo formatting is right
+            if (wordsArray.length !== 7) {
+              refund(op[1].from, amount, currency, 'invalid_formatting', 0, null, pubkey);
+              transactions.push(trans[1].trx_id)
+              continue     
+            }
             if (pubkey.length == 0) { // we are always encryting back memos when it comes to account creation
               let account = await client.database.call('get_accounts', [[op[1].from]])
               pubkey = account[0].memo_key
@@ -521,7 +533,7 @@ function getTransactions(callback) {
             try {
               // whether there are leftovers to send back or not, we need to send back an encrypted memo transfer with credential, and amounts then should equal leftovers
               utils.log('attempting to create account @' + newAccount)
-              await create_acc.createAccount(newAccount, op[1], leftovers, pubkey)
+              await create_acc.createAccount(wordsArray, op[1], leftovers, pubkey)
             } catch(e) {
               console.log(e)
               if (e == 'account name already taken') {
@@ -530,6 +542,7 @@ function getTransactions(callback) {
                 refund(op[1].from, amount, currency, '504', 0, null, pubkey);
               }
             }
+            refund(op[1].from, parseFloat(leftovers), currency, 'create_acc', 0, newAccount, pubkey);
             transactions.push(trans[1].trx_id)
             continue
           }

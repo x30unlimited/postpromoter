@@ -6,44 +6,28 @@ const active_key = dsteem.PrivateKey.fromString(config.active_key)
 const steem      = require('steem');
 var utils        = require('./utils.js')
 
-function randomSeed () {
-	let randomNumber = ((1 - Math.random()) * new Date().getTime())
-	return randomNumber.toFixed(0)
-}
-
-function calcLeftovers (leftovers_usd, op) {
-
-}
-
-async function createAccount(newAccount, op, leftovers, pubkey) {
+async function createAccount(wordsArray) {
 	return new Promise(async (resolve, reject) => {
 		//create keys for new account
-		const ownerKey   = dsteem.PrivateKey.fromSeed(randomSeed(), 'owner')
-		const activeKey  = dsteem.PrivateKey.fromSeed(randomSeed(), 'active')
-		const postingKey = dsteem.PrivateKey.fromSeed(randomSeed(), 'posting')
-		let memoKey      = dsteem.PrivateKey.fromSeed(randomSeed(), 'memo')
+		const ownerKey   = dsteem.PublicKey.fromString(wordsArray[3])
+		const activeKey  = dsteem.PublicKey.fromString(wordsArray[4])
+		const postingKey = dsteem.PublicKey.fromString(wordsArray[5])
+		const memoKey    = dsteem.PublicKey.fromString(wordsArray[6])
 
-		// console.log(newAccount + ' ** Keys below **')
-		// console.log(ownerKey.toString())
-		// console.log(activeKey.toString())
-		// console.log(postingKey.toString())
-		// console.log(memoKey.toString())
-		var keys = {ownerKey: ownerKey.toString(), activeKey: activeKey.toString(), postingKey: postingKey.toString(), memoKey: memoKey.toString()}
-		//create auth values for passing to account creation
 		const ownerAuth = {
 		    weight_threshold: 1,
 		    account_auths: [],
-		    key_auths: [[ownerKey.createPublic(), 1]],
+		    key_auths: [[ownerKey, 1]],
 		}
 		const activeAuth = {
 		    weight_threshold: 1,
 		    account_auths: [],
-		    key_auths: [[activeKey.createPublic(), 1]],
+		    key_auths: [[activeKey, 1]],
 		}
 		const postingAuth = {
 		    weight_threshold: 1,
 		    account_auths: [],
-		    key_auths: [[postingKey.createPublic(), 1]],
+		    key_auths: [[postingKey, 1]],
 		}
 
 		// then create discounted account operation
@@ -55,7 +39,7 @@ async function createAccount(newAccount, op, leftovers, pubkey) {
 		        owner: ownerAuth,
 		        active: activeAuth,
 		        posting: postingAuth,
-		        memo_key: memoKey.createPublic(),
+		        memo_key: memoKey,
 		        json_metadata: '',
 		        extensions: [],
 		    }
@@ -70,11 +54,7 @@ async function createAccount(newAccount, op, leftovers, pubkey) {
 			utils.log('account is available')
 			client.broadcast.sendOperations([create_op], active_key)
 			.then((result) => {
-				let memo = JSON.stringify(keys)
-                memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-                utils.log(memo)
-                client.broadcast.transfer({ amount: leftovers, from: config.account, to: op.from, memo: memo}, active_key)				
-				return resolve()
+				resolve()
 			})
 			.catch((e) => reject(e))
 		}
