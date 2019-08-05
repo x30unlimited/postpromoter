@@ -13,7 +13,12 @@ Bids and vote reversal requests can now be both encrypted or unencrypted. Upon e
 Encrypted memo is enabled out-of-the-box. **No configuration required**. Upon encrypted memo detection, the postpromoter mechanic downstream will behave normally once memo is decrypted with the bidbot memo key.
 
   ### Account creation
+
+Allow users to purchase accounts on behalf of your account. Discounted claimed accounts are needed (see feature auto account claiming.)
+
 Enable it in config.json under the boolean `account_creation_enabled`.
+
+Set a price for each account creation (in USD) under `create_account_price_usd`. In case more funds are sent, the system will automatically send leftovers along with the confirmation.
 
 The memo key word is **"createaccount"** followed by the new account name, and lastly followed by the owner public key, active public key, posting public key and memo public key (respectively). 
 
@@ -34,7 +39,7 @@ Enable it under `account_claim_enabled`and set a refresh rate at `claimAccountCo
 **In order to avoid depleting temporarily your account Resource Credits (RC) it is recommeded to set a conservative `claimAccountCountdown`value at first**
 
   ### Reverse votes
-Bidbot owners can now set a price for a vote reversal. For instance, *accountA* bids for vote on one of its posts. Then *accountB* sends a vote reversal request for accountA post. 
+Bidbot owners can now set a price for a vote reversal. For instance, *accountA* bids for vote on one of its posts. Then *accountB* sends a vote reversal request for *accountA* post. 
 *AccountB* can pay a fraction of the original bid amount paid by *accountA*.
 
 First, enable the reversal in config file (config.json), setting `reversal_enabled` to `true`. 
@@ -61,7 +66,7 @@ Tests that will target both original and new features making sure your instance 
 * Sending above vote-reversal price and confirming leftovers have been properly refunded
 
 ````
-npm test
+$ npm test
 ````
 
 ## Installation
