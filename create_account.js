@@ -72,7 +72,7 @@ async function createAccount(newAccount, op, leftovers, pubkey) {
 				let memo = keys.stringify(keys)
                 memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
                 utils.log(memo)
-                client.broadcast.transfer({ amount: leftovers, from: config.account, to: op.from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))				
+                client.broadcast.transfer({ amount: leftovers, from: config.account, to: op.from, memo: memo}, active_key)				
 				return resolve()
 			})
 		}
