@@ -15,9 +15,13 @@ Encrypted memo is enabled out-of-the-box. **No configuration required**. Upon en
   ### Account creation
 Enable it in config.json under the boolean `account_creation_enabled`.
 
-The memo key word is **"createaccount"** followed by the new account name, and lastly followed by the master public key, active public key, posting public key and memo public key (respectively). Please note the 4 keys are required; in case same public key is desired for all auths just repeat it in the memo).
- 
-Transfer Memo example: 
+The memo key word is **"createaccount"** followed by the new account name, and lastly followed by the owner public key, active public key, posting public key and memo public key (respectively). 
+
+**Please note the 4 keys are required; in case same public key is desired for all auths just repeat it in the memo.**
+
+Account creation transfer memo request can be encrypted.
+
+Transfer Memo example (encrypted): 
 ```
 #createaccount test.account STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W 
 ```
@@ -33,7 +37,9 @@ First, enable the reversal in config file (config.json), setting `reversal_enabl
 Second, define a reversal price. For example, 25% of original bid price, set `reversal_price` in config file as `0.25`.
 Users will simply send encrypted memos along with the bid with the keyword **"reverse"** before post URL. 
 
-Transfer Memo example: 
+Vote reversal transfer memo request can be encrypted.
+
+Transfer Memo example (encrypted): 
 ```
 #reverse https://steemit/@example/my-example-post-to-reversal 
 ```
