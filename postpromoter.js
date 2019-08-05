@@ -521,7 +521,7 @@ function getTransactions(callback) {
             try {
               // whether there are leftovers to send back or not, we need to send back an encrypted memo transfer with credential, and amounts then should equal leftovers
               utils.log('attempting to create account @' + newAccount)
-              await create_acc.createAccount(newAccount, op, leftovers, pubkey)
+              await create_acc.createAccount(newAccount, op[1], leftovers, pubkey)
             } catch(e) {
               console.log(e)
               if (e == 'account name already taken') {
