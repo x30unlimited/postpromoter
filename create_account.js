@@ -69,7 +69,7 @@ async function createAccount(newAccount, op, leftovers, pubkey) {
 			utils.log('account is available')
 			client.broadcast.sendOperations([create_op], active_key)
 			.then((result) => {
-				let memo = keys.stringify(keys)
+				let memo = JSON.stringify(keys)
                 memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
                 utils.log(memo)
                 client.broadcast.transfer({ amount: leftovers, from: config.account, to: op.from, memo: memo}, active_key)				
