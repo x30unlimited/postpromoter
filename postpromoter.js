@@ -508,19 +508,20 @@ function getTransactions(callback) {
               pubkey = account[0].memo_key
             }
             utils.log('Create Account Memo detected!')
-            let newAccount = wordsArray[1]
+            let newAccount    = wordsArray[1]
             let leftovers_usd = amount_usd - config.create_account_price_usd
+            let leftovers     = '0.001 STEEM'
             if (leftovers_usd < 0) {
               refund(op[1].from, amount, currency, 'create_acc_insufficient', 0, null, pubkey);
               transactions.push(trans[1].trx_id)
               continue             
             } else {
-              let leftovers = currency == 'STEEM' ? parseFloat(leftovers_usd / steem_price).toFixed(3) + ' STEEM' : parseFloat(leftovers_usd / sbd_price).toFixed(3) + ' SBD'
+              leftovers = currency == 'STEEM' ? parseFloat(leftovers_usd / steem_price).toFixed(3) + ' STEEM' : parseFloat(leftovers_usd / sbd_price).toFixed(3) + ' SBD'
             }
             try {
               // whether there are leftovers to send back or not, we need to send back an encrypted memo transfer with credential, and amounts then should equal leftovers
               utils.log('attempting to create account @' + newAccount)
-              await create_acc.createAccount(newAccount, leftovers, pubkey)
+              await create_acc.createAccount(newAccount, op, leftovers, pubkey)
             } catch(e) {
               console.log(e)
               if (e == 'account name already taken') {
