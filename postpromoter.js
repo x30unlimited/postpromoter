@@ -445,9 +445,14 @@ function getTransactions(callback) {
 
           utils.log(memo)
           var wordsArray = memo.split(' ')
-          if (config.reversal_enabled && wordsArray && wordsArray.length == 2 && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
+          if (config.reversal_enabled && wordsArray && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
+            // check if memo formatting is right
+            if (wordsArray.length != 2) {
+              refund(op[1].from, amount, currency, 'invalid_formatting', 0, null, pubkey);
+              transactions.push(trans[1].trx_id)
+              continue     
+            }
             utils.log('Reversal Memo detected!')
-
             var postURL            = wordsArray[1] // this can be problematic if inputs are fromdifferent UIs (steemit vs steampeak)
             var permlink           = postURL.substr(postURL.lastIndexOf('/') + 1)
             var author             = postURL.substring(postURL.lastIndexOf('@') + 1, postURL.lastIndexOf('/'))
@@ -471,12 +476,6 @@ function getTransactions(callback) {
             }
             // vote reversal
             if (vote_to_reverse) {
-              // check if memo formatting is right
-              if (wordsArray.length !== 2) {
-                refund(op[1].from, amount, currency, 'invalid_formatting', 0, null, pubkey);
-                transactions.push(trans[1].trx_id)
-                continue     
-              }
               utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
               let leftovers_usd = reverse.checkAmount(vote_to_reverse, op[1], config.reversal_price, steem_price, sbd_price, pubkey)
               if (leftovers_usd < 0) {
@@ -510,7 +509,8 @@ function getTransactions(callback) {
           // account creation
           if (config.create_account_enabled && wordsArray && wordsArray[0].indexOf('createaccount') > -1) {
             // check if memo formatting is right
-            if (wordsArray.length !== 6) {
+            if (wordsArray.length != 6) {
+              console.log(wordsArray)
               refund(op[1].from, amount, currency, 'invalid_formatting', 0, null, pubkey);
               transactions.push(trans[1].trx_id)
               continue     

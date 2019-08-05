@@ -6,29 +6,35 @@ const active_key = dsteem.PrivateKey.fromString(config.active_key)
 const steem      = require('steem');
 var utils        = require('./utils.js')
 
+let test = 'createaccount sdjjtt STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W'
+let testArr = test.split(' ')
+console.log(testArr.length)
+if (testArr.length != 6) {
+	console.log('invalid !')
+}
 async function createAccount(wordsArray) {
 	return new Promise(async (resolve, reject) => {
 		let newAccount = wordsArray[1]
 		//create keys for new account
-		const ownerKey   = dsteem.PublicKey.fromString(wordsArray[2])
-		const activeKey  = dsteem.PublicKey.fromString(wordsArray[3])
-		const postingKey = dsteem.PublicKey.fromString(wordsArray[4])
-		const memoKey    = dsteem.PublicKey.fromString(wordsArray[5])
+		const ownerPubKey   = wordsArray[2]
+		const activePubKey  = wordsArray[3]
+		const postingPubKey = wordsArray[4]
+		const memoPubKey    = wordsArray[5]
 
 		const ownerAuth = {
 		    weight_threshold: 1,
 		    account_auths: [],
-		    key_auths: [[ownerKey, 1]],
+		    key_auths: [[ownerPubKey, 1]],
 		}
 		const activeAuth = {
 		    weight_threshold: 1,
 		    account_auths: [],
-		    key_auths: [[activeKey, 1]],
+		    key_auths: [[activePubKey, 1]],
 		}
 		const postingAuth = {
 		    weight_threshold: 1,
 		    account_auths: [],
-		    key_auths: [[postingKey, 1]],
+		    key_auths: [[memoPubKey, 1]],
 		}
 
 		// then create discounted account operation
@@ -40,7 +46,7 @@ async function createAccount(wordsArray) {
 		        owner: ownerAuth,
 		        active: activeAuth,
 		        posting: postingAuth,
-		        memo_key: memoKey,
+		        memo_key: memoPubKey,
 		        json_metadata: '',
 		        extensions: [],
 		    }
