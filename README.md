@@ -3,7 +3,7 @@
 ## Intro
 This fork does not modify any of the original postpromoter features.
 
-This fork expands the original postpromoter capabilities with new features, but always tries to respect the original code by integrating new modules and by trying to modify the main module as little as possible.
+This fork expands the original postpromoter capabilities with new features, but always tries to respect the original by integrating new modules and modifying the main module as little as possible.
 
 
 ## Fork Features
@@ -13,13 +13,13 @@ Bids and vote reversal requests can now be both encrypted or unencrypted. Upon e
 Encrypted memo is enabled out-of-the-box. **No configuration required**. Upon encrypted memo detection, the postpromoter mechanic downstream will behave normally once memo is decrypted with the bidbot memo key.
 
   ### Reverse votes
-Bidbot owners can now set a price for a vote reversal. For instance, accountA bids for vote on one of its posts. Then accountB sends a vote reversal request for accountA post. 
-AccountB will need to pay only a fraction % of the original bid amount paid by account A.
+Bidbot owners can now set a price for a vote reversal. For instance, *accountA* bids for vote on one of its posts. Then *accountB* sends a vote reversal request for accountA post. 
+*AccountB* will need to pay only a fraction % of the original bid amount paid by *accountA*.
 
-First, enable the reversal in config file (config.json), setting 'reversal_mode' to `true`. 
+First, enable the reversal in config file (config.json), setting `reversal_enabled` to `true`. 
 
-Second, define a reversal price. For example, 25% of original bid price, set `reversal_price` in config file as '0.25'.
-Users will simply send encrypted memos along with the bid with the keyword "reverse" before post URL. 
+Second, define a reversal price. For example, 25% of original bid price, set `reversal_price` in config file as `0.25`.
+Users will simply send encrypted memos along with the bid with the keyword **"reverse"** before post URL. 
 
 Transfer Memo example: 
 ```
@@ -32,7 +32,7 @@ Transfer Memo example:
 
 Enable it in config.json under the boolean `account_creation_enabled`.
 
-The memo key word is 'createaccount' followed by the new account name, and lastly followed by the 4 public keys.
+The memo key word is **"createaccount"** followed by the new account name, and lastly followed by the 4 public keys.
 
 Transfer Memo example: 
 ```
