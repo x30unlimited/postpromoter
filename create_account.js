@@ -67,7 +67,7 @@ async function createAccount(newAccount, op, leftovers, pubkey) {
 			return reject('account name already taken')
 		} else {
 			utils.log('account is available')
-			client.broadcast.sendOperations([create_op], dsteem.PrivateKey.fromString(active_key))
+			client.broadcast.sendOperations([create_op], active_key)
 			.then((result) => {
 				let memo = keys.stringify(keys)
                 memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
@@ -75,6 +75,7 @@ async function createAccount(newAccount, op, leftovers, pubkey) {
                 client.broadcast.transfer({ amount: leftovers, from: config.account, to: op.from, memo: memo}, active_key)				
 				return resolve()
 			})
+			.catch((e) => reject(e))
 		}
 	})
 }
