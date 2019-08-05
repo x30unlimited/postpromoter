@@ -14,7 +14,7 @@ Encrypted memo is enabled out-of-the-box. **No configuration required**. Upon en
 
   ### Account creation
 
-Allow users to purchase accounts on behalf of your account. Discounted claimed accounts are needed (see feature auto account claiming.)
+Allow users to purchase accounts* on behalf of your account. Discounted claimed accounts are needed (see feature auto account claiming.)
 
 Enable it in config.json under the boolean `account_creation_enabled`.
 
@@ -30,6 +30,8 @@ Transfer Memo example (encrypted):
 ```
 #createaccount test.account STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W 
 ```
+
+(*) *No account recovery support is given*
 
   ### Auto account claiming
 Since bidbots account will usually sit on large amounts of SP, it is often convenient to expend RC (resource credits) on new accounts.
