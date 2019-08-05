@@ -6,8 +6,9 @@
     "https://steemd.privex.io",
     "https://gtg.steem.house:8090"
   ],
-  "reversal_mode": false,
+  "reversal_enabled": false,
   "reversal_price": 0.10,
+  "claim_account_enabled": false,
   "claimAccountCountdown": 1,
   "create_account_enabled": false,
   "create_account_price_usd": 1,

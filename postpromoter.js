@@ -445,7 +445,7 @@ function getTransactions(callback) {
 
           utils.log(memo)
           var wordsArray = memo.split(' ')
-          if (config.reversal_mode && wordsArray && wordsArray.length == 2 && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
+          if (config.reversal_enabled && wordsArray && wordsArray.length == 2 && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
             utils.log('Reversal Memo detected!')
 
             var postURL            = wordsArray[1] // this can be problematic if inputs are fromdifferent UIs (steemit vs steampeak)
