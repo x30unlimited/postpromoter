@@ -510,7 +510,7 @@ function getTransactions(callback) {
           // account creation
           if (config.create_account_enabled && wordsArray && wordsArray[0].indexOf('createaccount') > -1) {
             // check if memo formatting is right
-            if (wordsArray.length !== 7) {
+            if (wordsArray.length !== 6) {
               refund(op[1].from, amount, currency, 'invalid_formatting', 0, null, pubkey);
               transactions.push(trans[1].trx_id)
               continue     

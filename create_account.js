@@ -8,11 +8,12 @@ var utils        = require('./utils.js')
 
 async function createAccount(wordsArray) {
 	return new Promise(async (resolve, reject) => {
+		let newAccount = wordsArray[1]
 		//create keys for new account
-		const ownerKey   = dsteem.PublicKey.fromString(wordsArray[3])
-		const activeKey  = dsteem.PublicKey.fromString(wordsArray[4])
-		const postingKey = dsteem.PublicKey.fromString(wordsArray[5])
-		const memoKey    = dsteem.PublicKey.fromString(wordsArray[6])
+		const ownerKey   = dsteem.PublicKey.fromString(wordsArray[2])
+		const activeKey  = dsteem.PublicKey.fromString(wordsArray[3])
+		const postingKey = dsteem.PublicKey.fromString(wordsArray[4])
+		const memoKey    = dsteem.PublicKey.fromString(wordsArray[5])
 
 		const ownerAuth = {
 		    weight_threshold: 1,
