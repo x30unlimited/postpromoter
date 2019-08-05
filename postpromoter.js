@@ -522,6 +522,7 @@ function getTransactions(callback) {
               utils.log('attempting to create account @' + newAccount)
               await create_acc.createAccount(newAccount, leftovers, pubkey)
             } catch(e) {
+              console.log(e)
               if (e == 'account name already taken') {
                 refund(op[1].from, amount, currency, 'taken', 0, newAccount, pubkey);
               } else {
