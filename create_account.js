@@ -6,12 +6,6 @@ const active_key = dsteem.PrivateKey.fromString(config.active_key)
 const steem      = require('steem');
 var utils        = require('./utils.js')
 
-let test = 'createaccount sdjjtt STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W'
-let testArr = test.split(' ')
-console.log(testArr.length)
-if (testArr.length != 6) {
-	console.log('invalid !')
-}
 async function createAccount(wordsArray) {
 	return new Promise(async (resolve, reject) => {
 		let newAccount = wordsArray[1]
