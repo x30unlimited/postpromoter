@@ -5,7 +5,7 @@ var dsteem    = require('dsteem');
 var utils     = require('./utils');
 var reverse   = require('./reversal')
 var claim_acc = require('./claim_account')
-
+var create_acc= require('./create_account')
 
 var account           = null;
 var transactions      = [];
@@ -415,11 +415,12 @@ function getTransactions(callback) {
 
         // We only care about transfers to the bot
         if (op[0] == 'transfer' && op[1].to == config.account) {
-          var amount    = parseFloat(op[1].amount);
-          var currency  = utils.getCurrency(op[1].amount);
-          var memo      = op[1].memo;
-          var encrypted = false
-          var pubkey    = ''
+          var amount     = parseFloat(op[1].amount);
+          var amount_usd = currency == 'STEEM' ? amount * steem_price : amount * sbd_price;
+          var currency   = utils.getCurrency(op[1].amount);
+          var memo       = op[1].memo;
+          var encrypted  = false
+          var pubkey     = ''
 
           utils.log("Incoming Bid! From: " + op[1].from + ", Amount: " + op[1].amount + ", memo: " + op[1].memo);
 
@@ -444,7 +445,7 @@ function getTransactions(callback) {
 
           utils.log(memo)
           var wordsArray = memo.split(' ')
-          if (config.reversal_mode && wordsArray && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
+          if (config.reversal_mode && wordsArray && wordsArray.length == 2 && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
             utils.log('Reversal Memo detected!')
 
             var postURL            = wordsArray[1] // this can be problematic if inputs are fromdifferent UIs (steemit vs steampeak)
@@ -468,7 +469,7 @@ function getTransactions(callback) {
               })
               vote_to_reverse = match ? JSON.parse(JSON.stringify(match)) : undefined
             }
-
+            // vote reversal
             if (vote_to_reverse) {
               utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
               let leftovers_usd = reverse.checkAmount(vote_to_reverse, op[1], config.reversal_price, steem_price, sbd_price, pubkey)
@@ -500,7 +501,37 @@ function getTransactions(callback) {
               continue
             }
           }
-          
+          // account creation
+          if (config.create_account_enabled && wordsArray && wordsArray.length == 2 && wordsArray[0].indexOf('createaccount') > -1) {
+            if (pubkey.length == 0) { // we are always encryting back memos when it comes to account creation
+              let account = await client.database.call('get_accounts', [[op[1].from]])
+              pubkey = account[0].memo_key
+            }
+            utils.log('Create Account Memo detected!')
+            let newAccount = wordsArray[1]
+            let leftovers_usd = amount_usd - config.create_account_price_usd
+            if (leftovers_usd < 0) {
+              refund(op[1].from, amount, currency, 'create_acc_insufficient', 0, null, pubkey);
+              transactions.push(trans[1].trx_id)
+              continue             
+            } else {
+              let leftovers = currency == 'STEEM' ? parseFloat(leftovers_usd / steem_price).toFixed(3) + ' STEEM' : parseFloat(leftovers_usd / sbd_price).toFixed(3) + ' SBD'
+            }
+            try {
+              // whether there are leftovers to send back or not, we need to send back an encrypted memo transfer with credential, and amounts then should equal leftovers
+              utils.log('attempting to create account @' + newAccount)
+              await create_acc.createAccount(newAccount, leftovers, pubkey)
+            } catch(e) {
+              if (e == 'account name already taken') {
+                refund(op[1].from, amount, currency, 'taken', 0, newAccount, pubkey);
+              } else {
+                refund(op[1].from, amount, currency, '504', 0, null, pubkey);
+              }
+            }
+            transactions.push(trans[1].trx_id)
+            continue
+          }
+
           if(config.disabled_mode) {
             // Bot is disabled, refund all Bids
             refund(op[1].from, amount, currency, 'bot_disabled', 0, null, pubkey);
@@ -955,6 +986,9 @@ function refund(sender, amount, currency, reason, retries, data, pubkey) {
   memo = memo.replace(/{min_age}/g, config.min_post_age);
 	memo = memo.replace(/{sender}/g, sender);
   memo = memo.replace(/{tag}/g, data);
+  memo = memo.replace(/{name}/g, data);
+  memo = memo.replace(/{create_account_price_usd}/g, config.create_account_price_usd);
+
 
   var days = Math.floor(config.max_post_age / 24);
   var hours = (config.max_post_age % 24);

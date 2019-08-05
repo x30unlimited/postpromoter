@@ -7,9 +7,9 @@ var client = new dsteem.Client('https://anyx.io')
 
 function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_price, sbd_price, pubkey) {
 
-  let bid_amount       = parseFloat(bid_transfer.amount)
+  let bid_amount        = parseFloat(bid_transfer.amount)
   let bid_currency      = utils.getCurrency(bid_transfer.amount)
-  let reversal_amount  = parseFloat(reversal_transfer.amount)
+  let reversal_amount   = parseFloat(reversal_transfer.amount)
   let reversal_currency = utils.getCurrency(reversal_transfer.amount)
   
   let bid_usd         = bid_currency == 'STEEM' ? bid_amount * steem_price : bid_amount * sbd_price

@@ -9,6 +9,8 @@
   "reversal_mode": false,
   "reversal_price": 0.10,
   "claimAccountCountdown": 1,
+  "create_account_enabled": false,
+  "create_account_price_usd": 1,
   "backup_mode": false,
   "disabled_mode": false,
   "detailed_logging": false,
@@ -75,6 +77,9 @@
     "port": 3000
   },
   "transfer_memos": {
+    "504": "504",
+    "create_acc_taken": "{name} is already taken.",
+    "create_acc_insufficient": "Please send at {create_account_price_usd}$ for account creation (Leftovers will be sent back automatically)",
     "already_reversed": "Vote already reversed for {postURL}",
     "reversal_leftovers": "Leftovers from reversal request for {postURL}",
     "reversal_not_found": "The post you request a reversal for could not be found {postURL}",
