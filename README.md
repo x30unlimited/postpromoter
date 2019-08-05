@@ -12,6 +12,18 @@ Bids and vote reversal requests can now be both encrypted or unencrypted. Upon e
 
 Encrypted memo is enabled out-of-the-box. **No configuration required**. Upon encrypted memo detection, the postpromoter mechanic downstream will behave normally once memo is decrypted with the bidbot memo key.
 
+  ### Account creation
+Enable it in config.json under the boolean `account_creation_enabled`.
+
+The memo key word is **"createaccount"** followed by the new account name, and lastly followed by the master public key, active public key, posting public key and memo public key (respectively). Please note the 4 keys are required; in case same public key is desired for all auths just repeat it in the memo).
+ 
+Transfer Memo example: 
+```
+#createaccount test.account STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W 
+```
+
+  ### Auto account claiming
+Since bidbots account will usually sit on large amounts of SP, it is often convenient to expend RC (resource credits) on new accounts.
   ### Reverse votes
 Bidbot owners can now set a price for a vote reversal. For instance, *accountA* bids for vote on one of its posts. Then *accountB* sends a vote reversal request for accountA post. 
 *AccountB* can pay a fraction of the original bid amount paid by *accountA*.
@@ -27,20 +39,6 @@ Transfer Memo example:
 ```
 (notice the space between 'reverse' and 'post URL')
 
-  ### Account creation
-
-
-Enable it in config.json under the boolean `account_creation_enabled`.
-
-The memo key word is **"createaccount"** followed by the new account name, and lastly followed by the 4 public keys.
-
-Transfer Memo example: 
-```
-#createaccount test.account STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W STM7UkRnx6h2oumyYCRBkZYaUZqikyjiFGFvJ8i5vKCnQmCRC8D8W 
-```
-
-  ### Auto account claiming
-Since bidbots account will usually sit on large amounts of SP, it is often convenient to expend RC (resource credits) on new accounts.
   ### Mocha test Module
 Tests that will target both original and new features making sure your instance and configuration are ready for production. **Please make sure to add in config.json a test account before running the tests.**
 **Among the tests, these are some of the currently available:**
