@@ -299,7 +299,7 @@ function sendComment(bid) {
     let to = config.account
     let memo = 'reverse https://steemit.com/@' + bid.author.replace(/\./g, '') + '/' + bid.permlink
     hotsigninglink.replace(/\{amount\}/g, amount).replace(/\{to\}/g, to).replace(/\{memo\}/g, memo)
-    content.replace(/\{link\}/g, hotsigninglink).replace(/\{amount\}/g, bid.amount).replace(/\{reversal_price\}/g, parseFloat(amount).toFixed(3) + ' ' + currency)
+    content.replace(/\{link\}/g, hotsigninglink).replace(/\{amount\}/g, parseFloat(bid.amount).toFixed(3) + ' ' + bid.currency).replace(/\{reversal_price\}/g, parseFloat(amount).toFixed(3) + ' ' + currency)
   } else if(config.comment_location && config.comment_location != '') {
     content = fs.readFileSync(config.comment_location, "utf8");
   } else if (config.promotion_content && config.promotion_content != '') {
