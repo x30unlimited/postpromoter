@@ -26,7 +26,7 @@ var sbd_price         = 1;    // This will get overridden with actual prices if 
 var version           = 'postpromoter Steemium Fork - 1.0.0';
 var client            = null;
 var rpc_node          = null;
-var hotsigninglink    = 'https://v2.steemconnect.com/sign/transfer?&to={to}&amount={amount}&memo={memo}'
+const hotsigninglink  = 'https://v2.steemconnect.com/sign/transfer?&to={to}&amount={amount}&memo={memo}'
 utils.log('Looks like we are in ' + process.env.NODE_ENV + ' mode')
 
 startup();
@@ -298,8 +298,9 @@ function sendComment(bid) {
     amount = parseFloat(amount).toFixed(3) + currency
     let to = config.account
     let memo = 'reverse https://steemit.com/@' + bid.author.replace(/\./g, '') + '/' + bid.permlink
-    hotsigninglink.replace(/\{amount\}/g, amount).replace(/\{to\}/g, to).replace(/\{memo\}/g, memo)
-    content.replace(/\{link\}/g, hotsigninglink).replace(/\{amount\}/g, parseFloat(bid.amount).toFixed(3) + ' ' + bid.currency).replace(/\{reversal_price\}/g, parseFloat(amount).toFixed(3) + ' ' + currency)
+    let link = hotsigninglink
+    link.replace(/\{amount\}/g, amount).replace(/\{to\}/g, to).replace(/\{memo\}/g, memo)
+    content.replace(/\{link\}/g, link).replace(/\{amount\}/g, parseFloat(bid.amount).toFixed(3) + ' ' + bid.currency).replace(/\{reversal_price\}/g, parseFloat(amount).toFixed(3) + ' ' + currency)
   } else if(config.comment_location && config.comment_location != '') {
     content = fs.readFileSync(config.comment_location, "utf8");
   } else if (config.promotion_content && config.promotion_content != '') {
