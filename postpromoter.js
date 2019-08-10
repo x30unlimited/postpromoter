@@ -293,8 +293,8 @@ function sendComment(bid) {
 
   if (config.reversal_enabled) {
     content = fs.readFileSync(config.comment_reversal_location, "utf8");
-    let amount = parseFloat(bid.amount) * config.reversal_price
-    let currency = utils.getCurrency(bid.amount)
+    let amount = bid.amount * config.reversal_price
+    let currency = bid.currency
     amount = parseFloat(amount).toFixed(3) + currency
     let to = config.account
     let memo = 'reverse https://steemit.com/@' + bid.author.replace(/\./g, '') + '/' + bid.permlink
