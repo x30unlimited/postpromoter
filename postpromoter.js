@@ -293,14 +293,14 @@ function sendComment(bid) {
 
   if (config.reversal_enabled) {
     content = fs.readFileSync(config.comment_reversal_location, "utf8");
-    let amount = parseFloat(amount) * config.reversal_price
-    let currency = utils.getCurrency(amount)
-    amount = amount + ' ' + currency
+    let amount = parseFloat(bid.amount) * config.reversal_price
+    let currency = utils.getCurrency(bid.amount)
+    amount = parseFloat(amount).toFixed(3) + currency
     let to = config.account
-    let memo = 'reverse ' + bid.permlink
+    let memo = 'reverse https://steemit.com/@' + bid.author.replace(/\./g, '') + '/' + bid.permlink
     hotsigninglink.replace(/\{amount\}/g, amount).replace(/\{to\}/g, to).replace(/\{memo\}/g, memo)
     content.replace(/\{link\}/g, hotsigninglink)
-  } if(config.comment_location && config.comment_location != '') {
+  } else if(config.comment_location && config.comment_location != '') {
     content = fs.readFileSync(config.comment_location, "utf8");
   } else if (config.promotion_content && config.promotion_content != '') {
     content = config.promotion_content;
