@@ -1,9 +1,11 @@
-var steem  = require('steem')
-var dsteem = require('dsteem')
-var utils  = require('./utils.js');
-var fs     = require('fs');
-var config = JSON.parse(fs.readFileSync("config.json"));
-var client = new dsteem.Client('https://anyx.io')
+var steem     = require('steem')
+var dsteem    = require('dsteem')
+var utils     = require('./utils.js');
+var fs        = require('fs');
+var config    = JSON.parse(fs.readFileSync("config.json"));
+var client    = new dsteem.Client('https://anyx.io')
+const version = 'postpromoter Steemium Fork - 1.0.0';
+
 
 function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_price, sbd_price, pubkey) {
 
@@ -64,7 +66,49 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
   })
 }
 
+function sendReversalComment(vote_to_reverse) {
+  var content = null;
+
+  if(config.comment_reversal_to_author_location && config.comment_reversal_to_author_location != '') {
+    content = fs.readFileSync(config.comment_reversal_to_author_location, "utf8");
+  } else {
+    return utils.log('missing reversal_comment_to_author file or wrong path/location')
+  }
+
+  // If promotion content is specified in the config then use it to comment on the upvoted post
+  if (content && content != '') {
+    var parent_permlink = vote_to_reverse.memo.substr(vote_to_reverse.memo.lastIndexOf('/') + 1)
+    var author = vote_to_reverse.memo.substring(vote_to_reverse.memo.lastIndexOf('@') + 1, vote_to_reverse.memo.lastIndexOf('/'))
+    // Generate the comment permlink via steemit standard convention
+    var permlink = 're-' + author.replace(/\./g, '') + '-' + parent_permlink + '-' + new Date().toISOString().replace(/-|:|\./g, '').toLowerCase();
+
+    // Replace variables in the promotion content
+    content = content.replace(/\{permlink\}/g, parent_permlink)
+    // content = content.replace(/\{amount\}/g, reversal.amount)
+    // content = content.replace(/\{currency\}/g, reversal.currency)
+
+    // Broadcast the comment
+    var comment = { 
+      author: config.account, 
+      permlink: permlink, 
+      parent_author: author, 
+      parent_permlink: parent_permlink, 
+      title: permlink, 
+      body: content, 
+      json_metadata: '{"app":"postpromoter/' + version + '"}' 
+    };
+    // Broadcast the comment
+    client.broadcast.comment(comment, dsteem.PrivateKey.fromString(config.posting_key))
+    .then((res) => utils.log('reversal comment to reversed vote author has been succesfully broadcasted'))
+    .catch((e) => {
+      utils.log('reversal comment to reversed vote author has NOT been succesfully broadcasted')
+      console.log(e)
+    })
+  }
+}
+
 module.exports = {
   checkAmount: checkAmount,
-  reverseVote: reverseVote
+  reverseVote: reverseVote,
+  sendReversalComment
 }

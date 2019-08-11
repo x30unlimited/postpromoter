@@ -39,6 +39,7 @@
   "no_refund": ["bittrex", "poloniex", "openledger", "blocktrades", "minnowbooster", "ginabot"],
   "comment_location": "comment.md",
   "comment_reversal_location":"comment_reversal.md",
+  "comment_reversal__to_author_location":"comment_reversal_to_author.md",
   "max_per_author_per_round": 1,
   "price_source": "bittrex",
   "blacklist_settings": {
