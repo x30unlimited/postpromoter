@@ -292,15 +292,15 @@ function sendComment(bid) {
   var content = null;
 
   if (config.reversal_enabled) {
-    content = fs.readFileSync(config.comment_reversal_location, "utf8");
-    let amount = bid.amount * config.reversal_price
-    let currency = bid.currency
-    amount = parseFloat(amount).toFixed(3) + currency
-    let to = config.account
-    let memo = 'reverse https://steemit.com/@' + bid.author.replace(/\./g, '') + '/' + bid.permlink
-    let link = hotsigninglink
-    link = link.replace(/\{amount\}/g, amount).replace(/\{to\}/g, to).replace(/\{memo\}/g, memo)
-    content = content.replace(/\{link\}/g, link).replace(/\{amount\}/g, parseFloat(bid.amount).toFixed(3) + ' ' + bid.currency).replace(/\{reversal_price\}/g, parseFloat(amount).toFixed(3) + ' ' + currency)
+    content         = fs.readFileSync(config.comment_reversal_location, "utf8");
+    let link_amount = bid.amount * config.reversal_price
+    let currency    = bid.currency
+    link_amount     = parseFloat(link_amount).toFixed(3) + '20%' + currency
+    let to          = config.account
+    let link_memo   = '#reverse20%https://steemit.com/@' + bid.author.replace(/\./g, '') + '/' + bid.permlink
+    let link        = hotsigninglink
+    link            = link.replace(/\{amount\}/g, link_amount).replace(/\{to\}/g, to).replace(/\{memo\}/g, link_memo)
+    content         = content.replace(/\{link\}/g, link).replace(/\{amount\}/g, bid.amount + ' ' + currency).replace(/\{reversal_price\}/g, parseFloat(bid.amount * config.reversal_price).toFixed(3) + ' ' + currency)
   } else if(config.comment_location && config.comment_location != '') {
     content = fs.readFileSync(config.comment_location, "utf8");
   } else if (config.promotion_content && config.promotion_content != '') {
