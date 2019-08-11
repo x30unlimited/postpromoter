@@ -297,7 +297,7 @@ function sendComment(bid) {
     let currency    = bid.currency
     link_amount     = parseFloat(link_amount).toFixed(3) + currency
     let to          = config.account
-    let link_memo   = '#reverse%20https://steemit.com/@' + bid.author.replace(/\./g, '') + '/' + bid.permlink
+    let link_memo   = 'reverse%20https://steemit.com/@' + bid.author.replace(/\./g, '') + '/' + bid.permlink
     let link        = hotsigninglink
     link            = link.replace(/\{amount\}/g, link_amount).replace(/\{to\}/g, to).replace(/\{memo\}/g, link_memo)
     content         = content.replace(/\{link\}/g, link).replace(/\{amount\}/g, bid.amount + ' ' + currency).replace(/\{reversal_price\}/g, parseFloat(bid.amount * config.reversal_price).toFixed(3) + ' ' + currency)
