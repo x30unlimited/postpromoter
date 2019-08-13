@@ -24,7 +24,6 @@ function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_pric
 
 function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, steem_price, sbd_price, retries) {
   return new Promise(async (resolve, reject) => {
-    utils.log('** DEBUG ** reverseVote func activated')
     let postURL  = vote_to_reverse.memo.startsWith('#') ? vote_to_reverse.memo.substring(1) : vote_to_reverse.memo
     let permlink = postURL.substr(postURL.lastIndexOf('/') + 1)
     const vote   = {
@@ -53,7 +52,7 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
     }
     utils.log('Vote reversed for: @' + vote_to_reverse.from + permlink);
     // if no leftovers we close here
-    if (leftovers_usd == 0) return resolve()
+    if (leftovers_usd <= 0) return resolve()
     // send leftovers back
     let currency = utils.getCurrency(reversal_transfer.amount)
     let leftovers = (currency == 'STEEM') ? leftovers_usd / steem_price : leftovers_usd / sbd_price
