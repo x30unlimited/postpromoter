@@ -26,9 +26,10 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
   return new Promise(async (resolve, reject) => {
     let postURL  = vote_to_reverse.memo.startsWith('#') ? vote_to_reverse.memo.substring(1) : vote_to_reverse.memo
     let permlink = postURL.substr(postURL.lastIndexOf('/') + 1)
+    var author   = postURL.substring(postURL.lastIndexOf('@') + 1, postURL.lastIndexOf('/'))
     const vote   = {
       'voter': config.account,
-      'author': vote_to_reverse.from,
+      'author': author,
       'permlink': permlink,
       'weight': 0
     }
