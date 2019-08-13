@@ -6,6 +6,7 @@
     "https://steemd.privex.io",
     "https://gtg.steem.house:8090"
   ],
+  "test_min_vp": 1000,
   "reversal_enabled": false,
   "reversal_price": 0.10,
   "claim_account_enabled": false,
@@ -88,7 +89,7 @@
     "already_reversed": "Vote already reversed for {postURL}",
     "reversal_leftovers": "Leftovers from reversal request for {postURL}",
     "reversal_not_found": "The post you request a reversal for could not be found {postURL}",
-    "reversal_not_funds": "Your reversal request sent amount {amount} is not enough for {postURL}. Please send {reversal_price}% of the original bid value to be reversed in STEEM or SBD. This services sends back leftovers, so feel free to send a rough estimation",
+    "reversal_not_funds": "Your reversal request amount for {postURL} is not enough. Please send {reversal_price}. This services sends back leftovers, so feel free to send a rough estimation",
     "bot_disabled": "Refund for invalid bid: {amount} - The bot is currently disabled.",
     "below_min_bid": "Refund for invalid bid: {amount} - Min bid amount is {min_bid}.",
     "above_max_bid": "Refund for invalid bid: {amount} - Max bid amount is {max_bid}.",

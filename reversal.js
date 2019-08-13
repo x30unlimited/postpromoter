@@ -24,6 +24,7 @@ function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_pric
 
 function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, steem_price, sbd_price, retries) {
   return new Promise(async (resolve, reject) => {
+    utils.log('** DEBUG ** reverseVote func activated')
     let postURL  = vote_to_reverse.memo.startsWith('#') ? vote_to_reverse.memo.substring(1) : vote_to_reverse.memo
     let permlink = postURL.substr(postURL.lastIndexOf('/') + 1)
     const vote   = {
@@ -36,7 +37,7 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
     try { 
       await client.broadcast.vote(vote, dsteem.PrivateKey.fromString(config.posting_key))
     } catch(e) {
-      console.log(err)
+      console.log(e)
       utils.log('Error reversing vote for: @' + vote_to_reverse.from + permlink);
       let already_reversed_err = 'itr->vote_percent != o.weight: Your current vote on this comment is identical to this vote.'
       if (err = already_reversed_err) {
@@ -62,6 +63,10 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
     utils.log(memo)
     if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
     client.broadcast.transfer({ amount: leftovers, from: config.account, to: reversal_transfer.from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+    .catch((e) => {
+      if (e.jse_shortmsg == 'o.weight != 0: Vote weight cannot be 0.') utils.log('This vote to be reversed is either already reversed or has never been voted at all')
+      console.log(e)
+    })
     return resolve() 
   })
 }

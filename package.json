@@ -4,7 +4,9 @@
   "description": "Steem bid-based voting bot written in JavaScript",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test mocha --timeout 20000 --delay"
+    "test": "NODE_ENV=test mocha --timeout 20000 --delay",
+    "test-verbose": "NODE_ENV=test && verbose=true mocha --timeout 20000 --delay",
+    "testmode": "NODE_ENV=test && verbose=true node postpromoter.js"
   },
   "repository": {
     "type": "git",

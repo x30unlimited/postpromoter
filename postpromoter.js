@@ -7,6 +7,8 @@ var reverse   = require('./reversal')
 var claim_acc = require('./claim_account')
 var create_acc= require('./create_account')
 
+var test_min_vp = 0
+
 var account           = null;
 var transactions      = [];
 var outstanding_bids  = [];
@@ -27,7 +29,7 @@ var version           = 'postpromoter Steemium Fork - 1.0.0';
 var client            = null;
 var rpc_node          = null;
 const hotsigninglink  = 'https://v2.steemconnect.com/sign/transfer?&to={to}&amount={amount}&memo={memo}'
-utils.log('Looks like we are in ' + process.env.NODE_ENV + ' mode')
+utils.log('Looks like we are in ' + process.env.NODE_ENV)
 
 startup();
 
@@ -35,7 +37,7 @@ function startup() {
 
   // Load the settings from the config file
   loadConfig();
-
+  test_min_vp = config.test_min_vp
   // Connect to the specified RPC node
   rpc_node = config.rpc_nodes ? config.rpc_nodes[0] : (config.rpc_node ? config.rpc_node : 'https://api.steemit.com');
   client = new dsteem.Client(rpc_node);
@@ -141,9 +143,8 @@ function startProcess() {
         var bids_sbd = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'SBD') ? b.amount : 0); }, 0), 3);
         utils.log((config.backup_mode ? '* BACKUP MODE *' : '') + 'Voting Power: ' + utils.format(vp / 100) + '% | Time until next round: ' + utils.toTimer(utils.timeTilFullPower(vp)) + ' | Bids: ' + outstanding_bids.length + ' | ' + bids_sbd + ' SBD | ' + bids_steem + ' STEEM');
       }
-
       // We are at 100% voting power - time to vote!
-      let min_vp = (process.env.NODE_ENV == 'test') ? 8000 : 10000
+      let min_vp = (process.env.NODE_ENV == 'test') ? 1000 : 10000
       if (vp >= min_vp && outstanding_bids.length > 0 && round_end_timeout < 0) {
         round_end_timeout = setTimeout(function() {
           round_end_timeout = -1;
@@ -225,6 +226,7 @@ function startVoting(bids) {
   }
 
   comment(bids.slice());
+
   vote(bids);
 }
 
@@ -290,7 +292,6 @@ function sendVote(bid, retries, callback) {
 
 function sendComment(bid) {
   var content = null;
-
   if (config.reversal_enabled) {
     content         = fs.readFileSync(config.comment_reversal_location, "utf8");
     let link_amount = bid.amount * config.reversal_price
@@ -372,8 +373,8 @@ function getTransactions(callback) {
   client.database.call('get_account_history', [account.name, -1, num_trans]).then(async function (result) {
 
     var bid_history = result.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == config.account) }).map((x) => x[1].op[1])
-    bid_history.forEach((bid) => {
-      if (bid.memo.startsWith('#')) {
+    bid_history.forEach((bid) => { // decrypting all bidhistory memos might seem to be redundant, but this way we clear the ground for latter original bid transfer search
+      if (bid.memo.startsWith('#') && bid.memo.split(' ').length == 1) {
         try { 
           bid.memo = steem.memo.decode(config.memo_key, bid.memo)
         }catch(e){
@@ -385,7 +386,7 @@ function getTransactions(callback) {
         }
       }
     })
-    // On first load, just record the list of the past 50 transactions so we don't double-process them.
+
     if (first_load && transactions.length == 0) {
       transactions = result.map(r => r[1].trx_id).filter(t => t != '0000000000000000000000000000000000000000');
       first_load = false;
@@ -439,12 +440,19 @@ function getTransactions(callback) {
           var max_bid = config.max_bid ? parseFloat(config.max_bid) : 9999;
           var max_bid_whitelist = config.max_bid_whitelist ? parseFloat(config.max_bid_whitelist) : 9999;
 
-          if (op[1].memo.startsWith('#')) { // this is weak method to identify encrypted memos => !! to be improved
+          if (memo.startsWith('#')) { // this is weak method to identify encrypted memos => !! to be improved
             utils.log('encrypted memo detected!')
             encrypted = true
-            // find user posting public key
-            let account = await client.database.call('get_accounts', [[op[1].from]])
-            pubkey = account[0].memo_key
+            // find user memo public key
+            let account = []
+            try {
+              account = await client.database.call('get_accounts', [[op[1].from]])
+              pubkey = account[0].memo_key             
+            } catch(e) {
+              console.log(e)
+              utils.log('couldnt find users memo public key')
+              continue
+            }
           }
 
           // Save the ID of the last transaction that was processed.
@@ -488,21 +496,19 @@ function getTransactions(callback) {
             if (vote_to_reverse) {
               utils.log('the bid request to be reversed belongs to @' + vote_to_reverse.from + ', with memo: ' + vote_to_reverse.memo)
               let leftovers_usd = reverse.checkAmount(vote_to_reverse, op[1], config.reversal_price, steem_price, sbd_price, pubkey)
+              utils.log('* DEBUG * leftovers_usd = ' + leftovers_usd)
               if (leftovers_usd < 0) {
                 let memo = config.transfer_memos['reversal_not_funds']
-                memo = memo.replace(/{reversal_price}/g, (reversal_price * parseFloat(vote_to_reverse.amount)) + ' ' + utils.getCurrency(vote_to_reverse.amount));
-                memo = memo.replace(/{postURL}/g, postURL);
+                memo = memo.replace(/{reversal_price}/g, (config.reversal_price * parseFloat(vote_to_reverse.amount)) + ' ' + utils.getCurrency(vote_to_reverse.amount));
+                memo = memo.replace(/{postURL}/g, postURL)
                 // memo = memo.replace(/{amount}/g, reversal_transfer.amount);
                 utils.log(memo)
                 if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
-                client.broadcast.transfer({ amount: op[1].amount, from: config.account, to: reversal_transfer.from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
+                client.broadcast.transfer({ amount: op[1].amount, from: config.account, to: op[1].from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
                 transactions.push(trans[1].trx_id)
                 continue
               }
               reverse.reverseVote(vote_to_reverse, leftovers_usd, pubkey, op[1], steem_price, sbd_price, 0)
-              .catch((e) => {
-                console.log(e)
-              })
               transactions.push(trans[1].trx_id)
               continue // reversals are not regular bids 
             } else {
@@ -634,6 +640,7 @@ function checkRoundFillLimit(round, amount, currency) {
 }
 
 function validatePost(author, permlink, isVoting, callback, retries) {
+  if (process.env.NODE_ENV == 'test' && callback) callback()
   client.database.call('get_content', [author, permlink]).then(function (result) {
     if (result && result.id > 0) {
 
@@ -667,7 +674,7 @@ function validatePost(author, permlink, isVoting, callback, retries) {
         // Get the list of votes on this post to make sure the bot didn't already vote on it (you'd be surprised how often people double-submit!)
         var votes = result.active_votes.filter(function(vote) { return vote.voter == account.name; });
 
-        if (votes.length > 0 || ((new Date() - created) >= (config.max_post_age * 60 * 60 * 1000) && !isVoting)) {
+        if ((votes.length > 0 && votes[0].weight > 0) || ((new Date() - created) >= (config.max_post_age * 60 * 60 * 1000) && !isVoting)) {
             // This post is already voted on by this bot or the post is too old to be voted on
             if(callback)
               callback(((votes.length > 0) ? 'already_voted' : 'max_age'));
