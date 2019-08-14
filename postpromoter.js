@@ -29,7 +29,7 @@ var version           = 'postpromoter Steemium Fork - 1.0.0';
 var client            = null;
 var rpc_node          = null;
 const hotsigninglink  = 'https://v2.steemconnect.com/sign/transfer?&to={to}&amount={amount}&memo={memo}'
-utils.log('Looks like we are in ' + process.env.NODE_ENV)
+utils.log('Looks like we are in ' + process.env.NODE_ENV + ' mode')
 
 startup();
 

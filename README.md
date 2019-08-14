@@ -1,26 +1,27 @@
 # Steemium Postpromoter Fork
 
-## Intro
-This fork does not modify any of the original postpromoter features.
+## Note
 
-This fork expands the original postpromoter capabilities with new features, but always tries to respect the original by integrating new modules and modifying the main module as little as possible.
+This fork does not modify any of the original postpromoter features. Minimal impact on the original software.
 
 
-## Fork Features
-  ### Encrypted memos
-Bids and vote reversal requests can now be both encrypted or unencrypted. Upon encrypted transfers, postpromoter will always answer encrypting the memo.
+## Features
 
-Encrypted memo is enabled out-of-the-box. **No configuration required**. Upon encrypted memo detection, the postpromoter mechanic downstream will behave normally once memo is decrypted with the bidbot memo key.
+### Encrypted memos
+All incoming requests (vote bids, reversal requests...) can be can now be both encrypted or unencrypted. 
 
-  ### Account creation
+Upon encrypted transfers, postpromoter will always answer encrypting the memo. The postpromoter mechanic downstream will behave normally once memo is decrypted with the bidbot account memo key.
 
-Allow users to purchase accounts* on behalf of your account. Discounted claimed accounts are needed (see feature auto account claiming.)
+Encrypted memo is enabled out-of-the-box. **No configuration required**.
 
-Enable it in config.json under the boolean `account_creation_enabled`.
+### Sell Accounts
+Allow users and dApps to purchase accounts* on behalf of your account. Discounted claimed accounts are needed in order to sell accounts (see feature auto discounted account claiming).
 
-Set a price for each account creation (in USD) under `create_account_price_usd`. In case more funds are sent, the system will automatically send leftovers along with the confirmation.
+Enable account selling in config.json under the boolean `account_creation_enabled`.
 
-The memo key word is **"createaccount"** followed by the new account name, and lastly followed by the owner public key, active public key, posting public key and memo public key (respectively). 
+Set a price for each account creation (in USD) under `create_account_price_usd`(In case more funds are sent, the system will automatically send leftovers along with the confirmation).
+
+The memo *keyword* is **"createaccount"** followed by the new account name, and lastly followed by the owner public key, active public key, posting public key and memo public key (respectively). 
 
 **Please note the 4 keys are required; in case same public key is desired for all auths just repeat it in the memo.**
 
@@ -33,20 +34,20 @@ Transfer Memo example (encrypted):
 
 (*) *No account recovery support is given*
 
-  ### Auto account claiming
+### Auto discounted account claiming
 Since bidbots account will usually sit on large amounts of SP, it is often convenient to expend RC (resource credits) on new accounts.
 
 Enable it under `account_claim_enabled`and set a refresh rate at `claimAccountCountdown`in hours.
 
 **In order to avoid depleting temporarily your account Resource Credits (RC) it is recommeded to set a conservative `claimAccountCountdown`value at first**
 
-  ### Reverse votes
+### Reverse votes
 Bidbot owners can now set a price for a vote reversal. For instance, *accountA* bids for vote on one of its posts. Then *accountB* sends a vote reversal request for *accountA* post. 
 *AccountB* can pay a fraction of the original bid amount paid by *accountA*.
 
 First, enable the reversal in config file (config.json), setting `reversal_enabled` to `true`. 
 
-Second, define a reversal price. For example, 25% of original bid price, set `reversal_price` in config file as `0.25`.
+Second, define a reversal price. For example, 20% of original bid price, set `reversal_price` in config file as `0.20`.
 Users will simply send encrypted memos along with the bid with the keyword **"reverse"** before post URL. 
 
 Vote reversal transfer memo request can be encrypted.
@@ -57,8 +58,13 @@ Transfer Memo example (encrypted):
 ```
 (notice the space between 'reverse' and 'post URL')
 
-  ### Mocha test Module
-Tests that will target both original and new features making sure your instance and configuration are ready for production. **Please make sure to add in config.json a test account before running the tests.**
+#### Steemconnect hot signing links (HSL)
+For ease of use, your postpromoter instance will post a HSL on the upvoted post comment. This way, users can easily access the reversal feature without manual transfers. 
+
+With HSL all you need to do is clicking on the link and, when prompted, authenticating via steemconnect.
+
+### Mocha test Module
+Tests will target both original and new features making sure your instance and configuration are ready for production. For testing purposes, the test account will post a test-post for testing operations (voting, unvoting etc..)
 **Among the tests, these are some of the currently available:**
 * Memo encryption / decryption
 * dsteem Asynchronous client requests
@@ -66,10 +72,17 @@ Tests that will target both original and new features making sure your instance 
 * Bid for vote and confirming vote
 * Check via blockchain that refunds have been properly sent
 * Sending above vote-reversal price and confirming leftovers have been properly refunded
+* Check vote reversal has been succesfully un-casted
+
+**Important: If you want to run tests before production (recommended) please make sure to set in config file a testing account (testing account will serve a a fake/dummy account for bidding and requesting vote reversal)**
 
 ````
 $ npm test
 ````
+Verbose mode:
+```
+$ npm run test-verbose
+```
 
 ## Installation
 ```
@@ -93,8 +106,13 @@ Then set the following options in config.json:
     "https://steemd.privex.io",
     "https://gtg.steem.house:8090"
   ],
-  "reversal_mode": false,
-  "reversal_price": 0.10,
+  "test_min_vp": 1000,
+  "reversal_enabled": false,
+  "reversal_price": 0.20,
+  "claim_account_enabled": false,
+  "claimAccountCountdown": 1,
+  "create_account_enabled": false,
+  "create_account_price_usd": 1,
   "backup_mode": false,
   "disabled_mode": false,
   "detailed_logging": false,
@@ -121,6 +139,8 @@ Then set the following options in config.json:
   "min_refund_amount": 0.002,
   "no_refund": ["bittrex", "poloniex", "openledger", "blocktrades", "minnowbooster", "ginabot"],
   "comment_location": "comment.md",
+  "comment_reversal_location":"comment_reversal.md",
+  "comment_reversal__to_author_location":"comment_reversal_to_author.md",
   "max_per_author_per_round": 1,
   "price_source": "bittrex",
   "blacklist_settings": {
@@ -161,10 +181,15 @@ Then set the following options in config.json:
     "port": 3000
   },
   "transfer_memos": {
+    "504": "504",
+    "create_acc": "@{name} account creation succeeded. Leftovers included.",
+    "invalid_formatting": "Invalid memo formatting",
+    "create_acc_taken": "{name} is already taken.",
+    "create_acc_insufficient": "Please send at {create_account_price_usd}$ for account creation (Leftovers will be sent back automatically)",
     "already_reversed": "Vote already reversed for {postURL}",
     "reversal_leftovers": "Leftovers from reversal request for {postURL}",
     "reversal_not_found": "The post you request a reversal for could not be found {postURL}",
-    "reversal_not_funds": "Your reversal request sent amount {amount} is not enough for {postURL}. Please send {reversal_price}% of the original bid value to be reversed in STEEM or SBD. This services sends back leftovers, so feel free to send a rough estimation",
+    "reversal_not_funds": "Your reversal request amount for {postURL} is not enough. Please send {reversal_price}. This services sends back leftovers, so feel free to send a rough estimation",
     "bot_disabled": "Refund for invalid bid: {amount} - The bot is currently disabled.",
     "below_min_bid": "Refund for invalid bid: {amount} - Min bid amount is {min_bid}.",
     "above_max_bid": "Refund for invalid bid: {amount} - Max bid amount is {max_bid}.",

@@ -64,7 +64,6 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
     if (pubkey.length > 0) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
     client.broadcast.transfer({ amount: leftovers, from: config.account, to: reversal_transfer.from, memo: memo}, dsteem.PrivateKey.fromString(config.active_key))
     .catch((e) => {
-      if (e.jse_shortmsg == 'o.weight != 0: Vote weight cannot be 0.') utils.log('This vote to be reversed is either already reversed or has never been voted at all')
       console.log(e)
     })
     return resolve() 
