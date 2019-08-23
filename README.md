@@ -1,4 +1,4 @@
-# Promobot software
+# Postpromoter (Promobot version)
 
 ## Note
 
