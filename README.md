@@ -1,11 +1,11 @@
-# Steemium Postpromoter Fork
+# Promobot software
 
 ## Note
 
-This fork does not modify any of the original postpromoter features. Minimal impact on the original software.
+This is a fork of postpromoter but it does not modify any of the original features.
 
 
-## Features
+## Additional Features
 
 ### Encrypted memos
 All incoming requests (vote bids, reversal requests...) can be can now be both encrypted or unencrypted. 
