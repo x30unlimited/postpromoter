@@ -212,6 +212,7 @@ function startVoting(bids) {
     var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
     //min_total_bids_value_usd: calculates the minimum value in USD that the total bids must have to represent a maximum ROI defined in config.json
     //'max_roi' in config.json = 10 represents a maximum ROI of 10%
+
     var min_total_bids_value_usd = vote_value_usd * 0.50 * ((100 - config.max_roi) / 100 );
     // calculates the value of the weight of the vote needed to give the maximum ROI defined
     adjusted_weight = (total < min_total_bids_value_usd) ? (total / min_total_bids_value_usd) : 1;
@@ -635,6 +636,7 @@ function checkRoundFillLimit(round, amount, currency) {
   var new_bid_value = amount * ((currency == 'SBD') ? sbd_price : steem_price);
 
   // Check if the value of the bids is over the round fill limit
+
   return (vote_value_usd * 0.50 * config.round_fill_limit < bid_value + new_bid_value);
 }
 
