@@ -14,8 +14,14 @@ Upon encrypted transfers, postpromoter will always answer encrypting the memo. T
 
 Encrypted memo is enabled out-of-the-box. **No configuration required**.
 
-### Sell Accounts
-Allow users and dApps to purchase accounts* on behalf of your account. Discounted claimed accounts are needed in order to sell accounts (see feature auto discounted account claiming).
+
+### Auto discounted account claiming
+Bidbots accounts usually have large amounts of unused RC that can be used to claim discounted account creation "tickets".
+
+Enable it under `account_claim_enabled`and set a refresh rate at `claimAccountCountdown`in hours.
+
+### Sell Account Creation
+Allow users and dApps to purchase new accounts. Discounted claimed accounts are needed in order to sell accounts.
 
 Enable account selling in config.json under the boolean `account_creation_enabled`.
 
@@ -34,10 +40,6 @@ Transfer Memo example (encrypted):
 
 (*) *No account recovery support is given*
 
-### Auto discounted account claiming
-Since bidbots account will usually sit on large amounts of SP, it is often convenient to expend RC (resource credits) on new accounts.
-
-Enable it under `account_claim_enabled`and set a refresh rate at `claimAccountCountdown`in hours.
 
 **In order to avoid depleting temporarily your account Resource Credits (RC) it is recommeded to set a conservative `claimAccountCountdown`value at first**
 
