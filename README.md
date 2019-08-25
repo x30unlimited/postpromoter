@@ -1,9 +1,8 @@
-# Postpromoter (Promobot version)
+# Promobot (Postpromoter fork)
 
 ## Note
 
-This is a fork of postpromoter but it does not modify any of the original features.
-
+This is a fork of postpromoter but so dfar it does not modify any of the original features.
 
 ## Additional Features
 
