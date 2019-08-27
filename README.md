@@ -1,4 +1,4 @@
-# Promobot (Postpromoter fork)
+# Postpromoter fork, Maintained by Steemium
 
 ## Note
 
