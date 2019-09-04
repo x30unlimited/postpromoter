@@ -3,6 +3,7 @@ package-lock.json
 # config
 config.json
 state.json
+failed-bids.json
 
 # Logs
 logs
