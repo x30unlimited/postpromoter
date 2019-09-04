@@ -214,14 +214,8 @@ function startVoting(bids) {
     var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
     //min_total_bids_value_usd: calculates the minimum value in USD that the total bids must have to represent a maximum ROI defined in config.json
     //'max_roi' in config.json = 10 represents a maximum ROI of 10%
-<<<<<<< HEAD
 
-    var min_total_bids_value_usd = vote_value_usd * 0.50 * ((100 - config.max_roi) / 100 );
-||||||| merged common ancestors
-    var min_total_bids_value_usd = vote_value_usd * 0.75 * ((100 - config.max_roi) / 100 );
-=======
     var min_total_bids_value_usd = vote_value_usd * AUTHOR_PCT * ((100 - config.max_roi) / 100 );
->>>>>>> upstream/master
     // calculates the value of the weight of the vote needed to give the maximum ROI defined
     adjusted_weight = (total < min_total_bids_value_usd) ? (total / min_total_bids_value_usd) : 1;
     utils.log('Total vote weight: ' + (config.batch_vote_weight * adjusted_weight));
