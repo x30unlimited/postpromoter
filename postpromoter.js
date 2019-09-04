@@ -638,14 +638,9 @@ function checkRoundFillLimit(round, amount, currency) {
   var new_bid_value = amount * ((currency == 'SBD') ? sbd_price : steem_price);
 
   // Check if the value of the bids is over the round fill limit
-<<<<<<< HEAD
 
-  return (vote_value_usd * 0.50 * config.round_fill_limit < bid_value + new_bid_value);
-||||||| merged common ancestors
-  return (vote_value_usd * 0.75 * config.round_fill_limit < bid_value + new_bid_value);
-=======
   return (vote_value_usd * AUTHOR_PCT * config.round_fill_limit < bid_value + new_bid_value);
->>>>>>> upstream/master
+
 }
 
 function validatePost(author, permlink, isVoting, callback, retries) {
