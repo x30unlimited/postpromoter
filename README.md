@@ -1,8 +1,8 @@
-# Postpromoter fork, Maintained by Steemium
+# Promobot, Maintained by Steemium
 
 ## Note
 
-This is a fork of postpromoter but so dfar it does not modify any of the original features.
+This is a fork of postpromoter but so far it does not modify any of the original features.
 
 ## Additional Features
 
