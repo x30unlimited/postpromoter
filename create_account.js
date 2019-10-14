@@ -6,14 +6,23 @@ const active_key = dsteem.PrivateKey.fromString(config.active_key)
 const steem      = require('steem');
 var utils        = require('./utils.js')
 
+//TODO: pass client as argument or as module export 
 async function createAccount(wordsArray) {
 	return new Promise(async (resolve, reject) => {
 		let newAccount = wordsArray[1]
+		let ownerPubKey, activePubKey, postingPubKey, memoPubKey
 		//create keys for new account
-		const ownerPubKey   = wordsArray[2]
-		const activePubKey  = wordsArray[3]
-		const postingPubKey = wordsArray[4]
-		const memoPubKey    = wordsArray[5]
+		if (wordsArray.length == 6) {
+			ownerPubKey   = wordsArray[2]
+			activePubKey  = wordsArray[3]
+			postingPubKey = wordsArray[4]
+			memoPubKey    = wordsArray[5]			
+		} else {
+			ownerPubKey   = wordsArray[2]
+			activePubKey  = wordsArray[2]
+			postingPubKey = wordsArray[2]
+			memoPubKey    = wordsArray[2]				
+		}
 
 		const ownerAuth = {
 		    weight_threshold: 1,

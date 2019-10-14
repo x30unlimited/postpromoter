@@ -28,7 +28,7 @@ Set a price for each account creation (in USD) under `create_account_price_usd`(
 
 The memo *keyword* is **"createaccount"** followed by the new account name, and lastly followed by the owner public key, active public key, posting public key and memo public key (respectively). 
 
-**Please note the 4 keys are required; in case same public key is desired for all auths just repeat it in the memo.**
+**For ease of use, and in case you just want to provide one single public key to all scopes (owner, active, posting & memo) just provide one single public key (in WIF format) in the memo.**
 
 Account creation transfer memo request can be encrypted.
 

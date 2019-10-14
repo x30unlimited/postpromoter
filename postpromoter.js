@@ -527,7 +527,7 @@ function getTransactions(callback) {
           // account creation
           if (config.create_account_enabled && wordsArray && wordsArray[0].indexOf('createaccount') > -1) {
             // check if memo formatting is right
-            if (wordsArray.length != 6) {
+            if (wordsArray.length != 3 && wordsArray.length != 6) {
               console.log(wordsArray)
               refund(op[1].from, amount, currency, 'invalid_formatting', 0, null, pubkey);
               transactions.push(trans[1].trx_id)
@@ -551,7 +551,7 @@ function getTransactions(callback) {
             try {
               // whether there are leftovers to send back or not, we need to send back an encrypted memo transfer with credential, and amounts then should equal leftovers
               utils.log('attempting to create account @' + newAccount)
-              await create_acc.createAccount(wordsArray, op[1], leftovers, pubkey)
+              await create_acc.createAccount(wordsArray)
             } catch(e) {
               console.log(e)
               if (e == 'account name already taken') {
