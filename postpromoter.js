@@ -539,14 +539,17 @@ function getTransactions(callback) {
             }
             utils.log('Create Account Memo detected!')
             let newAccount    = wordsArray[1]
-            let leftovers_usd = amount_usd - config.create_account_price_usd
-            let leftovers     = '0.001 STEEM'
-            if (leftovers_usd < 0) {
+            let priceCurrency = config.create_account_price.indexOf('STEEM') > 0 ? 'STEEM' : 'SBD'
+            let leftovers     = parseFloat(amount - parseFloat(config.create_account_price)).toFixed(3) + ' ' + priceCurrency
+            if (leftovers < 0) {
               refund(op[1].from, amount, currency, 'create_acc_insufficient', 0, null, pubkey);
               transactions.push(trans[1].trx_id)
               continue             
-            } else {
-              leftovers = currency == 'STEEM' ? parseFloat(leftovers_usd / steem_price).toFixed(3) + ' STEEM' : parseFloat(leftovers_usd / sbd_price).toFixed(3) + ' SBD'
+            } 
+            if (currency !== priceCurrency) {
+              refund(op[1].from, amount, currency, 'wrong_currency', 0, null, pubkey);
+              transactions.push(trans[1].trx_id)
+              continue                
             }
             try {
               // whether there are leftovers to send back or not, we need to send back an encrypted memo transfer with credential, and amounts then should equal leftovers
