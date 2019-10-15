@@ -555,6 +555,7 @@ function getTransactions(callback) {
               // whether there are leftovers to send back or not, we need to send back an encrypted memo transfer with credential, and amounts then should equal leftovers
               utils.log('attempting to create account @' + newAccount)
               await create_acc.createAccount(wordsArray)
+              utils.log('succesfully created new account: @' + newAccount)
             } catch(e) {
               console.log(e)
               if (e == 'account name already taken') {
@@ -563,6 +564,8 @@ function getTransactions(callback) {
                 refund(op[1].from, amount, currency, '504', 0, null, pubkey);
               }
             }
+            // in case there are no leftovers to send back, we set a stander microtransfer amount just to confirm via transfer memo
+            if (parseFloat(leftovers) == 0) leftovers = '0.001 STEEM'
             refund(op[1].from, parseFloat(leftovers), currency, 'create_acc', 0, newAccount, pubkey);
             transactions.push(trans[1].trx_id)
             continue

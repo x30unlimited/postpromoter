@@ -63,9 +63,7 @@ async function createAccount(wordsArray) {
 		} else {
 			utils.log('account is available')
 			client.broadcast.sendOperations([create_op], active_key)
-			.then((result) => {
-				resolve()
-			})
+			.then((result) => resolve())
 			.catch((e) => reject(e))
 		}
 	})
