@@ -533,10 +533,6 @@ function getTransactions(callback) {
               transactions.push(trans[1].trx_id)
               continue     
             }
-            if (pubkey.length == 0) { // we are always encryting back memos when it comes to account creation
-              let account = await client.database.call('get_accounts', [[op[1].from]])
-              pubkey = account[0].memo_key
-            }
             utils.log('Create Account Memo detected!')
             let newAccount    = wordsArray[1]
             let priceCurrency = config.create_account_price.indexOf('STEEM') > 0 ? 'STEEM' : 'SBD'
