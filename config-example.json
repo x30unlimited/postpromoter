@@ -12,7 +12,7 @@
   "claim_account_enabled": false,
   "claimAccountCountdown": 1,
   "create_account_enabled": false,
-  "create_account_price_usd": 1,
+  "create_account_price": "1.000 STEEM",
   "backup_mode": false,
   "disabled_mode": false,
   "detailed_logging": false,
@@ -81,6 +81,7 @@
     "port": 3000
   },
   "transfer_memos": {
+    "wrong_currency":"@{name} account creation has failed because of wrong currency",
     "504": "504",
     "create_acc": "@{name} account creation succeeded. Leftovers included.",
     "invalid_formatting": "Invalid memo formatting",
