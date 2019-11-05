@@ -435,6 +435,7 @@ function getTransactions(callback) {
           var memo       = op[1].memo;
           var encrypted  = false
           var pubkey     = ''
+          var from       = op[1].from;
 
           utils.log("Incoming Bid! From: " + op[1].from + ", Amount: " + op[1].amount + ", memo: " + op[1].memo);
 
@@ -465,7 +466,7 @@ function getTransactions(callback) {
           transactions.shift();
 
           utils.log(memo)
-          var wordsArray = memo.split(' ')
+          var wordsArray = from == 'bittrex' ? memo.split('_') : memo.split(' ')
           if (config.reversal_enabled && wordsArray && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
             // check if memo formatting is right
             if (wordsArray.length != 2) {
