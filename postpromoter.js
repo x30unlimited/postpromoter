@@ -466,7 +466,7 @@ function getTransactions(callback) {
           transactions.shift();
 
           utils.log(memo)
-          var wordsArray = from == 'bittrex' ? memo.split('_') : memo.split(' ')
+          var wordsArray = memo.split(' ')
           if (config.reversal_enabled && wordsArray && wordsArray[0].indexOf('reverse') > -1) { // suggestion: make it less common like 'ppflag' as keyword
             // check if memo formatting is right
             if (wordsArray.length != 2) {
@@ -527,6 +527,9 @@ function getTransactions(callback) {
           }
           // account creation
           if (config.create_account_enabled && wordsArray && wordsArray[0].indexOf('createaccount') > -1) {
+            // for acc creation "_" and " " in memo are equivalent
+            memo = memo.replace('_', ' ')
+            wordsArray = wordsArray.split(' ')
             // check if memo formatting is right
             if (wordsArray.length != 3 && wordsArray.length != 6) {
               console.log(wordsArray)
