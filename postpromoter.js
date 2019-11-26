@@ -20,6 +20,7 @@ var whitelist         = [];
 var config            = null;
 var first_load        = true;
 var isVoting          = false;
+var isProcessing      = false;
 var last_withdrawal   = null;
 var use_delegators    = false;
 var round_end_timeout = -1;
@@ -130,6 +131,10 @@ function startup() {
 }
 
 function startProcess() {
+  // Check if already running
+  if(isProcessing) return;
+  isProcessing = true;
+
   // Load the settings from the config file each time so we can pick up any changes
   loadConfig();
 
@@ -185,8 +190,10 @@ function startProcess() {
       if (config.auto_withdrawal.frequency == 'daily')
         checkAutoWithdraw();
     }
+    isProcessing = false;
   }, function(err) {
     logError('Error loading bot account: ' + err);
+    isProcessing = false;
   });
 }
 
