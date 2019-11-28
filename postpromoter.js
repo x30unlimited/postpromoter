@@ -390,7 +390,8 @@ function getTransactions(callback) {
           // console.log(bid)
           let trx_id = result.find((x) => x[1].op[1] == bid)[1].trx_id
           transactions.push(trx_id)
-          return
+          isProcessing = false
+	  return
         }
       }
     })
@@ -404,6 +405,7 @@ function getTransactions(callback) {
       if(callback)
         callback();
 
+      isProcessing = false;
       return;
     }
 
