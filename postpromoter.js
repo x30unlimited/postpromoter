@@ -131,10 +131,6 @@ function startup() {
 }
 
 function startProcess() {
-  // Check if already running
-  if(isProcessing) return;
-  isProcessing = true;
-
   // Load the settings from the config file each time so we can pick up any changes
   loadConfig();
 
@@ -143,7 +139,7 @@ function startProcess() {
     account = result[0];
 
     if (account && !isVoting) {
-			var vp = utils.getVotingPower(account);
+      var vp = utils.getVotingPower(account);
 
       if(config.detailed_logging) {
         var bids_steem = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'STEEM') ? b.amount : 0); }, 0), 3);
@@ -190,10 +186,8 @@ function startProcess() {
       if (config.auto_withdrawal.frequency == 'daily')
         checkAutoWithdraw();
     }
-    isProcessing = false;
   }, function(err) {
     logError('Error loading bot account: ' + err);
-    isProcessing = false;
   });
 }
 
@@ -365,6 +359,10 @@ function resteem(bid) {
 }
 
 function getTransactions(callback) {
+  // Check if already running
+  if(isProcessing) return;
+  isProcessing = true;
+	
   var last_trx_id = null;
   var num_trans = 50;
 
@@ -633,11 +631,15 @@ function getTransactions(callback) {
 
     if (callback)
       callback();
+
+    isProcessing = false;
   }, function(err) {
     logError('Error loading account history: ' + err);
 
     if (callback)
       callback();
+
+    isProcessing = false;
   });
 }
 
