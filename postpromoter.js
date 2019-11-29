@@ -430,16 +430,6 @@ function getTransactions(callback) {
       var trans = result[i];
       var op = trans[1].op;
       
-      // Check if tx num is lower than last processed
-      if(trans[0] < last_processed_tx_num) {
-        if(config.debug_logging)
-          utils.log('Skip Transaction Num ' + trans[0] + ' (saved: ' + last_processed_tx_num + ')');
-        continue;
-      } else {
-        last_processed_tx_num = trans[0];
-      }
-
-	    
       // Don't need to process virtual ops
       if(trans[1].trx_id == '0000000000000000000000000000000000000000')
         continue;
@@ -454,10 +444,18 @@ function getTransactions(callback) {
 
           continue;
         }
-
-        if(config.debug_logging)
-          utils.log('Processing Transaction: ' + JSON.stringify(trans));
-
+        
+        // Check if tx num is lower than last processed
+        if(trans[0] < last_processed_tx_num) {
+          if(config.debug_logging)
+            utils.log('Skip Transaction Num ' + trans[0] + ' (saved: ' + last_processed_tx_num + ')');
+          continue;
+        } else {
+          if(config.debug_logging)
+            utils.log('Processing Transaction: ' + JSON.stringify(trans));
+          last_processed_tx_num = trans[0];
+        }
+        
         // We only care about transfers to the bot
         if (op[0] == 'transfer' && op[1].to == config.account) {
           var amount     = parseFloat(op[1].amount);
