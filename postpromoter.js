@@ -394,7 +394,13 @@ function getTransactions(callback) {
   }
 
   client.database.call('get_account_history', [account.name, -1, num_trans]).then(async function (result) {
+    if (typeof result === 'undefined') {
+      utils.log('get_account_history: result is undefined !');
 
+      isRunningTx = false;
+      return;
+    }  
+	  
     var bid_history = result.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == config.account) }).map((x) => x[1].op[1])
     bid_history.forEach((bid) => { // decrypting all bidhistory memos might seem to be redundant, but this way we clear the ground for latter original bid transfer search
       if (bid.memo.startsWith('#') && bid.memo.split(' ').length == 1) {
