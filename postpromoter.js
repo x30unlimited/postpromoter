@@ -9,6 +9,8 @@ var create_acc= require('./create_account')
 
 var test_min_vp = 0
 
+var last_processed_tx_num = -1;
+
 var account           = null;
 var transactions      = [];
 var outstanding_bids  = [];
@@ -427,7 +429,17 @@ function getTransactions(callback) {
     for (var i = 0; i < result.length; i++) {
       var trans = result[i];
       var op = trans[1].op;
+      
+      // Check if tx num is lower than last processed
+      if(trans[0] < last_processed_tx_num) {
+        if(config.debug_logging)
+          utils.log('Skip Transaction Num ' + trans[0]);
+        continue;
+      } else {
+        last_processed_tx_num = trans[0];
+      }
 
+	    
       // Don't need to process virtual ops
       if(trans[1].trx_id == '0000000000000000000000000000000000000000')
         continue;
