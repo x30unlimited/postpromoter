@@ -433,7 +433,7 @@ function getTransactions(callback) {
       // Check if tx num is lower than last processed
       if(trans[0] < last_processed_tx_num) {
         if(config.debug_logging)
-          utils.log('Skip Transaction Num ' + trans[0]);
+          utils.log('Skip Transaction Num ' + trans[0] + ' (saved: ' + last_processed_tx_num + ')');
         continue;
       } else {
         last_processed_tx_num = trans[0];
