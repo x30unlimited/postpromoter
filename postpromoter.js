@@ -20,7 +20,8 @@ var whitelist         = [];
 var config            = null;
 var first_load        = true;
 var isVoting          = false;
-var isProcessing      = false;
+var isRunningProcess  = false;
+var isRunningTx       = false;
 var last_withdrawal   = null;
 var use_delegators    = false;
 var round_end_timeout = -1;
@@ -131,6 +132,13 @@ function startup() {
 }
 
 function startProcess() {
+  // Check if already running
+  if(isRunningProcess) {
+    utils.log("startProcess() is already running !");
+    return;
+  }
+  isRunningProcess = true;
+
   // Load the settings from the config file each time so we can pick up any changes
   loadConfig();
 
@@ -186,8 +194,10 @@ function startProcess() {
       if (config.auto_withdrawal.frequency == 'daily')
         checkAutoWithdraw();
     }
+    isRunningProcess = false;
   }, function(err) {
     logError('Error loading bot account: ' + err);
+    isRunningProcess = false;
   });
 }
 
@@ -360,8 +370,11 @@ function resteem(bid) {
 
 function getTransactions(callback) {
   // Check if already running
-  if(isProcessing) return;
-  isProcessing = true;
+  if(isRunningTx) {
+    utils.log('getTransactions() is already running !');
+    return;
+  }
+  isRunningTx = true;
 	
   var last_trx_id = null;
   var num_trans = 50;
@@ -390,8 +403,7 @@ function getTransactions(callback) {
           // console.log(bid)
           let trx_id = result.find((x) => x[1].op[1] == bid)[1].trx_id
           transactions.push(trx_id)
-          isProcessing = false
-	  return
+          return
         }
       }
     })
@@ -405,7 +417,7 @@ function getTransactions(callback) {
       if(callback)
         callback();
 
-      isProcessing = false;
+      isRunningTx = false;
       return;
     }
 
@@ -634,14 +646,14 @@ function getTransactions(callback) {
     if (callback)
       callback();
 
-    isProcessing = false;
+    isRunningTx = false;
   }, function(err) {
     logError('Error loading account history: ' + err);
 
     if (callback)
       callback();
 
-    isProcessing = false;
+    isRunningTx = false;
   });
 }
 
