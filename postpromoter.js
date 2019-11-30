@@ -411,6 +411,7 @@ function getTransactions(callback) {
           // console.log(bid)
           let trx_id = result.find((x) => x[1].op[1] == bid)[1].trx_id
           transactions.push(trx_id)
+          isRunningTx = false
           return
         }
       }
@@ -895,6 +896,11 @@ function checkPost(memo, amount, currency, sender, retries) {
 				if(affiliate) {
 					refund(affiliate.beneficiary, amount * (affiliate.fee_pct / 10000), currency, 'affiliate', 0, 'Sender: @' + sender + ', Post: ' + memo);
 				}
+        
+        // Power Up
+        if(config.auto_powerup && config.auto_powerup === true && currency == 'STEEM') {
+          client.broadcast.transfer_to_vesting({from: config.account, to: config.account, amount: amount});
+        }
 			}
 
 			// If a witness_vote transfer memo is set, check if the sender votes for the bot owner as witness and send them a message if not
