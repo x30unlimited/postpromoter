@@ -904,7 +904,7 @@ function checkPost(memo, amount, currency, sender, retries) {
 							'transfer_to_vesting', {
 								'from': config.account,
 								'to': config.account,
-								'amount': amount + ' STEEM'
+								'amount': utils.format(amount, 3) + ' STEEM'
 							}
 						]
 					], dsteem.PrivateKey.fromString(config.active_key));
