@@ -897,10 +897,18 @@ function checkPost(memo, amount, currency, sender, retries) {
 					refund(affiliate.beneficiary, amount * (affiliate.fee_pct / 10000), currency, 'affiliate', 0, 'Sender: @' + sender + ', Post: ' + memo);
 				}
         
-        // Power Up
-        if(config.auto_powerup && config.auto_powerup === true && currency == 'STEEM') {
-          client.broadcast.transfer_to_vesting({from: config.account, to: config.account, amount: amount});
-        }
+				// Power Up
+				if(config.auto_powerup && config.auto_powerup === true && currency == 'STEEM') {
+					client.broadcast.sendOperations([
+						Operation = [
+							'transfer_to_vesting', {
+								'from': config.account,
+								'to': config.account,
+								'amount': amount + ' STEEM'
+							}
+						]
+					], dsteem.PrivateKey.fromString(config.active_key));
+				}
 			}
 
 			// If a witness_vote transfer memo is set, check if the sender votes for the bot owner as witness and send them a message if not
