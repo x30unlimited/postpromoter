@@ -455,7 +455,7 @@ function getTransactions(callback) {
         // Check if tx num is lower than last processed
         if(trans[0] < last_processed_tx_num) {
           if(config.debug_logging)
-            utils.log('Skip Transaction Num ' + trans[0] + ' (saved: ' + last_processed_tx_num + ')');
+            utils.log('Skip Transaction Num ' + trans[0] + ' (saved: ' + last_processed_tx_num + ', fetch: ' + result.length + ', size: ' + transactions.length + ')');
           continue;
         } else {
           if(config.debug_logging)
