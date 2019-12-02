@@ -885,32 +885,25 @@ function checkPost(memo, amount, currency, sender, retries) {
 				// Check that the new total doesn't exceed the max bid amount per post
 				if (new_amount > max_bid)
 					refund(sender, amount, currency, 'above_max_bid');
-				else
+				else {
 					existing_bid.amount = new_amount;
+					// Power Up
+					powerUp(amount, currency);
+				}
 			} else {
 				// All good - push to the array of valid bids for this round
 				utils.log('Valid Bid - Amount: ' + amount + ' ' + currency + ', Url: ' + memo);
 				round.push({ amount: amount, currency: currency, sender: sender, author: author, permlink: permLink, url: memo });
 
+				// Power Up
+				powerUp(amount, currency);
+				
 				// If this bid is through an affiliate service, send the fee payout
 				if(affiliate) {
 					refund(affiliate.beneficiary, amount * (affiliate.fee_pct / 10000), currency, 'affiliate', 0, 'Sender: @' + sender + ', Post: ' + memo);
 				}
-        
-				// Power Up
-				if(config.auto_powerup && config.auto_powerup === true && currency == 'STEEM') {
-					client.broadcast.sendOperations([
-						Operation = [
-							'transfer_to_vesting', {
-								'from': config.account,
-								'to': config.account,
-								'amount': utils.format(amount, 3) + ' STEEM'
-							}
-						]
-					], dsteem.PrivateKey.fromString(config.active_key));
-				}
 			}
-
+			
 			// If a witness_vote transfer memo is set, check if the sender votes for the bot owner as witness and send them a message if not
 			if (config.transfer_memos['witness_vote'] && config.transfer_memos['witness_vote'] != '') {
 				checkWitnessVote(sender, sender, currency);
@@ -920,6 +913,20 @@ function checkPost(memo, amount, currency, sender, retries) {
 			}
 		});
 	});
+}
+
+function powerUp(amount, currency) {
+	if(config.auto_powerup && config.auto_powerup === true && currency == 'STEEM') {
+		client.broadcast.sendOperations([
+			Operation = [
+				'transfer_to_vesting', {
+					'from': config.account,
+					'to': config.account,
+					'amount': utils.format(amount, 3) + ' STEEM'
+				}
+			]
+		], dsteem.PrivateKey.fromString(config.active_key));
+	}
 }
 
 function checkGlobalBlacklist(author, sender, callback) {
