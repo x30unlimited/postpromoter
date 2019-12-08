@@ -887,21 +887,20 @@ function checkPost(memo, amount, currency, sender, retries) {
 					refund(sender, amount, currency, 'above_max_bid');
 				else {
 					existing_bid.amount = new_amount;
-					// Power Up
-					powerUp(amount, currency);
+					powerUp(amount - (push_to_next_round ? 0.001 : 0), currency);
 				}
 			} else {
 				// All good - push to the array of valid bids for this round
 				utils.log('Valid Bid - Amount: ' + amount + ' ' + currency + ', Url: ' + memo);
 				round.push({ amount: amount, currency: currency, sender: sender, author: author, permlink: permLink, url: memo });
 
-				// Power Up
-				powerUp(amount, currency);
-				
 				// If this bid is through an affiliate service, send the fee payout
 				if(affiliate) {
 					refund(affiliate.beneficiary, amount * (affiliate.fee_pct / 10000), currency, 'affiliate', 0, 'Sender: @' + sender + ', Post: ' + memo);
-				}
+					powerUp(amount - amount * (affiliate.fee_pct / 10000) - (push_to_next_round ? 0.001 : 0), currency);
+				} else
+					powerUp(amount - (push_to_next_round ? 0.001 : 0), currency);
+				
 			}
 			
 			// If a witness_vote transfer memo is set, check if the sender votes for the bot owner as witness and send them a message if not
