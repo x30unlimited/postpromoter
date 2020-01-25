@@ -75,28 +75,31 @@ function startup() {
 
   // Check if bot state has been saved to disk, in which case load it
   if (fs.existsSync('state.json')) {
-    var state = JSON.parse(fs.readFileSync("state.json"));
+	  var state_json = fs.readFileSync("state.json");
+	  if (state_json.length > 10) {
+      var state = JSON.parse(state_json);
 
-    if (state.transactions)
-      transactions = state.transactions;
+      if (state.transactions)
+        transactions = state.transactions;
 
-    if (state.outstanding_bids)
-      outstanding_bids = state.outstanding_bids;
+      if (state.outstanding_bids)
+        outstanding_bids = state.outstanding_bids;
 
-    if (state.last_round)
-      last_round = state.last_round;
+      if (state.last_round)
+        last_round = state.last_round;
 
-    if (state.next_round)
-      next_round = state.next_round;
+      if (state.next_round)
+        next_round = state.next_round;
 
-    if(state.last_withdrawal)
-      last_withdrawal = state.last_withdrawal;
+      if(state.last_withdrawal)
+        last_withdrawal = state.last_withdrawal;
 
-		// Removed this for now since api.steemit.com is not returning more than 30 days of account history!
-    //if(state.version != version)
-    //  updateVersion(state.version, version);
+      // Removed this for now since api.steemit.com is not returning more than 30 days of account history!
+      //if(state.version != version)
+      //  updateVersion(state.version, version);
 
-    utils.log('Restored saved bot state: ' + JSON.stringify({ last_trx_id: (transactions.length > 0 ? transactions[transactions.length - 1] : ''), bids: outstanding_bids.length, last_withdrawal: last_withdrawal }));
+      utils.log('Restored saved bot state: ' + JSON.stringify({ last_trx_id: (transactions.length > 0 ? transactions[transactions.length - 1] : ''), bids: outstanding_bids.length, last_withdrawal: last_withdrawal }));
+    }
   }
 
   // Check whether or not auto-withdrawals are set to be paid to delegators.
