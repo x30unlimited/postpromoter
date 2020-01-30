@@ -22,6 +22,7 @@ var whitelist         = [];
 var config            = null;
 var first_load        = true;
 var isVoting          = false;
+var isRunningSave     = false;
 var isRunningProcess  = false;
 var isRunningTx       = false;
 var last_withdrawal   = null;
@@ -1015,6 +1016,13 @@ function checkWitnessVote(sender, voter, currency) {
 }
 
 function saveState() {
+  // Check if already running
+  if(isRunningSave) {
+    utils.log("saveState() is already running !");
+    return;
+  }
+  isRunningSave = true;
+	
   var state = {
     outstanding_bids: outstanding_bids,
     last_round: last_round,
@@ -1028,6 +1036,7 @@ function saveState() {
   fs.writeFile('state.json', JSON.stringify(state, null, 2), function (err) {
     if (err)
       utils.log(err);
+    isRunningSave = false;
   });
 }
 
