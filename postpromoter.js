@@ -502,7 +502,7 @@ function getTransactions(callback) {
           // Save the ID of the last transaction that was processed.
           transactions.push(trans[1].trx_id);
 
-          if(transactions.length > 60)
+          if(transactions.length > 250)
           transactions.shift();
 
           utils.log(memo)
@@ -658,8 +658,8 @@ function getTransactions(callback) {
         // Save the ID of the last transaction that was processed.
         transactions.push(trans[1].trx_id);
 
-        // Don't save more than the last 60 transaction IDs in the state
-        if(transactions.length > 60)
+        // Don't save more than the last 250 transaction IDs in the state
+        if(transactions.length > 250)
           transactions.shift();
       }
     }
