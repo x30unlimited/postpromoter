@@ -162,6 +162,13 @@ function startProcess() {
       }
       // We are at 100% voting power - time to vote!
       let min_vp = (process.env.NODE_ENV == 'test') ? 1000 : 10000
+      
+      // Wrong state fix
+      if (vp >= min_vp && next_round.length > 0 && outstanding_bids.length == 0 && round_end_timeout < 0) {
+        outstanding_bids = next_round.slice();
+	next_round = [];
+      }
+	    
       if (vp >= min_vp && outstanding_bids.length > 0 && round_end_timeout < 0) {
         round_end_timeout = setTimeout(function() {
           round_end_timeout = -1;
