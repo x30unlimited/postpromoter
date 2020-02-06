@@ -855,7 +855,7 @@ function checkPost(memo, amount, currency, sender, retries) {
 		}
 		
 		validatePost(author, permLink, false, function(error) {
-			if(error && error != 'min_age') {
+			if(error) {
 				refund(sender, amount, currency, error);
 				return;
 			}
