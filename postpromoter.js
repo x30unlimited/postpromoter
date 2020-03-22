@@ -1425,19 +1425,19 @@ function loadPrices() {
     });
   } else {
     // Load STEEM price in BTC from bittrex and convert that to USD using BTC price in coinmarketcap
-    request.get('https://api.coinmarketcap.com/v1/ticker/bitcoin/', function (e, r, data) {
-      request.get('https://bittrex.com/api/v1.1/public/getticker?market=BTC-STEEM', function (e, r, btc_data) {
+    request.get('https://global.bittrex.com/api/v1.1/public/getticker?market=USD-BTC', function (e, r, data) {
+      request.get('https://global.bittrex.com/api/v1.1/public/getticker?market=BTC-STEEM', function (e, r, btc_data) {
         try {
-          steem_price = parseFloat(JSON.parse(data)[0].price_usd) * parseFloat(JSON.parse(btc_data).result.Last);
+          steem_price = parseFloat(JSON.parse(data).result.Last) * parseFloat(JSON.parse(btc_data).result.Last);
           utils.log('Loaded STEEM Price from Bittrex: ' + steem_price);
         } catch (err) {
           utils.log('Error loading STEEM price from Bittrex: ' + err);
         }
       });
 
-      request.get('https://bittrex.com/api/v1.1/public/getticker?market=BTC-SBD', function (e, r, btc_data) {
+      request.get('https://global.bittrex.com/api/v1.1/public/getticker?market=BTC-SBD', function (e, r, btc_data) {
         try {
-          sbd_price = parseFloat(JSON.parse(data)[0].price_usd) * parseFloat(JSON.parse(btc_data).result.Last);
+          sbd_price = parseFloat(JSON.parse(data).result.Last) * parseFloat(JSON.parse(btc_data).result.Last);
           utils.log('Loaded SBD Price from Bittrex: ' + sbd_price);
         } catch (err) {
           utils.log('Error loading SBD price from Bittrex: ' + err);
