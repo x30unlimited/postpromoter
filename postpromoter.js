@@ -1168,7 +1168,7 @@ function claimRewards() {
           }, function(err) { utils.log('Error transfering liquid STEEM post rewards: ' + err); });
         }
       }
-    }, function(err) { utils.log('Error claiming rewards...will try again next time.'); });
+    }, function(err) { utils.log('Error claiming rewards...will try again next time. (err: ' + err + ')'); });
   }
 }
 
