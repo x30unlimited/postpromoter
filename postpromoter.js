@@ -46,7 +46,7 @@ function startup() {
   loadConfig();
   test_min_vp = config.test_min_vp
   // Connect to the specified RPC node
-  rpc_node = config.rpc_nodes ? config.rpc_nodes[0] : (config.rpc_node ? config.rpc_node : 'https://api.steemit.com');
+  rpc_node = config.rpc_nodes ? config.rpc_nodes[0] : (config.rpc_node ? config.rpc_node : 'https://api.hive.blog');
   client = new dsteem.Client(rpc_node);
 
   utils.log("* START - Version: " + version + " *");
@@ -132,7 +132,7 @@ function startup() {
   // Schedule to run every 10 seconds
   setInterval(startProcess, 10000);
 
-  // Load updated STEEM and SBD prices every 30 minutes
+  // Load updated HIVE and HBD prices every 30 minutes
   loadPrices();
   setInterval(loadPrices, 30 * 60 * 1000);
 }
@@ -156,9 +156,9 @@ function startProcess() {
       var vp = utils.getVotingPower(account);
 
       if(config.detailed_logging) {
-        var bids_steem = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'STEEM') ? b.amount : 0); }, 0), 3);
-        var bids_sbd = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'SBD') ? b.amount : 0); }, 0), 3);
-        utils.log((config.backup_mode ? '* BACKUP MODE *' : '') + 'Voting Power: ' + utils.format(vp / 100) + '% | Time until next round: ' + utils.toTimer(utils.timeTilFullPower(vp)) + ' | Bids: ' + outstanding_bids.length + ' | ' + bids_sbd + ' SBD | ' + bids_steem + ' STEEM');
+        var bids_steem = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'HIVE') ? b.amount : 0); }, 0), 3);
+        var bids_sbd = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'HBD') ? b.amount : 0); }, 0), 3);
+        utils.log((config.backup_mode ? '* BACKUP MODE *' : '') + 'Voting Power: ' + utils.format(vp / 100) + '% | Time until next round: ' + utils.toTimer(utils.timeTilFullPower(vp)) + ' | Bids: ' + outstanding_bids.length + ' | ' + bids_sbd + ' HBD | ' + bids_steem + ' HIVE');
       }
       // We are at 100% voting power - time to vote!
       let min_vp = (process.env.NODE_ENV == 'test') ? 1000 : 10000
@@ -229,10 +229,10 @@ function startVoting(bids) {
     return total + getUsdValue(bid);
   }, 0);
 
-  var bids_steem = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'STEEM') ? b.amount : 0); }, 0), 3);
-  var bids_sbd = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'SBD') ? b.amount : 0); }, 0), 3);
+  var bids_steem = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'HIVE') ? b.amount : 0); }, 0), 3);
+  var bids_sbd = utils.format(outstanding_bids.reduce(function(t, b) { return t + ((b.currency == 'HBD') ? b.amount : 0); }, 0), 3);
   utils.log('=======================================================');
-  utils.log('Bidding Round End! Starting to vote! Total bids: ' + bids.length + ' - $' + total + ' | ' + bids_sbd + ' SBD | ' + bids_steem + ' STEEM');
+  utils.log('Bidding Round End! Starting to vote! Total bids: ' + bids.length + ' - $' + total + ' | ' + bids_sbd + ' HBD | ' + bids_steem + ' HIVE');
 
   var adjusted_weight = 1;
   
@@ -480,7 +480,7 @@ function getTransactions(callback) {
         // We only care about transfers to the bot
         if (op[0] == 'transfer' && op[1].to == config.account) {
           var amount     = parseFloat(op[1].amount);
-          var amount_usd = currency == 'STEEM' ? amount * steem_price : amount * sbd_price;
+          var amount_usd = currency == 'HIVE' ? amount * steem_price : amount * sbd_price;
           var currency   = utils.getCurrency(op[1].amount);
           var memo       = op[1].memo;
           var encrypted  = false
@@ -589,7 +589,7 @@ function getTransactions(callback) {
             }
             utils.log('Create Account Memo detected!')
             let newAccount    = wordsArray[1]
-            let priceCurrency = config.create_account_price.indexOf('STEEM') > 0 ? 'STEEM' : 'SBD'
+            let priceCurrency = config.create_account_price.indexOf('HIVE') > 0 ? 'HIVE' : 'HBD'
             let leftovers     = parseFloat(amount - parseFloat(config.create_account_price)).toFixed(3) + ' ' + priceCurrency
             if (leftovers < 0) {
               refund(op[1].from, amount, currency, 'create_acc_insufficient', 0, null, pubkey);
@@ -615,7 +615,7 @@ function getTransactions(callback) {
               }
             }
             // in case there are no leftovers to send back, we set a stander microtransfer amount just to confirm via transfer memo
-            if (parseFloat(leftovers) == 0) leftovers = '0.001 STEEM'
+            if (parseFloat(leftovers) == 0) leftovers = '0.001 HIVE'
             refund(op[1].from, parseFloat(leftovers), currency, 'create_acc', 0, newAccount, pubkey);
             transactions.push(trans[1].trx_id)
             continue
@@ -660,7 +660,7 @@ function getTransactions(callback) {
 
           // Check if we should send a delegation message
           if(parseFloat(delegator.new_vesting_shares) > parseFloat(delegator.vesting_shares) && config.transfer_memos['delegation'] && config.transfer_memos['delegation'] != '')
-            refund(op[1].delegator, 0.001, 'SBD', 'delegation', 0, utils.vestsToSP(parseFloat(delegator.new_vesting_shares)).toFixed());
+            refund(op[1].delegator, 0.001, 'HBD', 'delegation', 0, utils.vestsToSP(parseFloat(delegator.new_vesting_shares)).toFixed());
 
           utils.log('*** Delegation Update - ' + op[1].delegator + ' has delegated ' + op[1].vesting_shares);
         }
@@ -694,8 +694,8 @@ function checkRoundFillLimit(round, amount, currency) {
 
   var vote_value = utils.getVoteValue(100, account, 10000, steem_price);
   var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
-  var bid_value = round.reduce(function(t, b) { return t + b.amount * ((b.currency == 'SBD') ? sbd_price : steem_price) }, 0);
-  var new_bid_value = amount * ((currency == 'SBD') ? sbd_price : steem_price);
+  var bid_value = round.reduce(function(t, b) { return t + b.amount * ((b.currency == 'HBD') ? sbd_price : steem_price) }, 0);
+  var new_bid_value = amount * ((currency == 'HBD') ? sbd_price : steem_price);
 
   // Check if the value of the bids is over the round fill limit
 
@@ -888,9 +888,9 @@ function checkPost(memo, amount, currency, sender, retries) {
 
 				if(existing_bid.currency == currency) {
 					new_amount = existing_bid.amount + amount;
-				} else if(existing_bid.currency == 'STEEM') {
+				} else if(existing_bid.currency == 'HIVE') {
 					new_amount = existing_bid.amount + amount * sbd_price / steem_price;
-				} else if(existing_bid.currency == 'SBD') {
+				} else if(existing_bid.currency == 'HBD') {
 					new_amount = existing_bid.amount + amount * steem_price / sbd_price;
 				}
 
@@ -929,13 +929,13 @@ function checkPost(memo, amount, currency, sender, retries) {
 }
 
 function powerUp(amount, currency) {
-	if(config.auto_powerup && config.auto_powerup === true && currency == 'STEEM') {
+	if(config.auto_powerup && config.auto_powerup === true && currency == 'HIVE') {
 		client.broadcast.sendOperations([
 			Operation = [
 				'transfer_to_vesting', {
 					'from': config.account,
 					'to': config.account,
-					'amount': utils.format(amount, 3) + ' STEEM'
+					'amount': utils.format(amount, 3) + ' HIVE'
 				}
 			]
 		], dsteem.PrivateKey.fromString(config.active_key));
@@ -1143,29 +1143,29 @@ function claimRewards() {
       if (result) {
         if(config.detailed_logging) {
           var rewards_message = "$$$ ==> Rewards Claim";
-          if (parseFloat(account.reward_sbd_balance) > 0) { rewards_message = rewards_message + ' SBD: ' + parseFloat(account.reward_sbd_balance); }
-          if (parseFloat(account.reward_steem_balance) > 0) { rewards_message = rewards_message + ' STEEM: ' + parseFloat(account.reward_steem_balance); }
+          if (parseFloat(account.reward_sbd_balance) > 0) { rewards_message = rewards_message + ' HBD: ' + parseFloat(account.reward_sbd_balance); }
+          if (parseFloat(account.reward_steem_balance) > 0) { rewards_message = rewards_message + ' HIVE: ' + parseFloat(account.reward_steem_balance); }
           if (parseFloat(account.reward_vesting_balance) > 0) { rewards_message = rewards_message + ' VESTS: ' + parseFloat(account.reward_vesting_balance); }
 
           utils.log(rewards_message);
         }
 
-        // If there are liquid SBD rewards, withdraw them to the specified account
+        // If there are liquid HBD rewards, withdraw them to the specified account
         if(parseFloat(account.reward_sbd_balance) > 0 && config.post_rewards_withdrawal_account && config.post_rewards_withdrawal_account != '') {
 
           // Send liquid post rewards to the specified account
           client.broadcast.transfer({ amount: account.reward_sbd_balance, from: config.account, to: config.post_rewards_withdrawal_account, memo: 'Liquid Post Rewards Withdrawal' }, dsteem.PrivateKey.fromString(config.active_key)).then(function(response) {
             utils.log('$$$ Auto withdrawal - liquid post rewards: ' + account.reward_sbd_balance + ' sent to @' + config.post_rewards_withdrawal_account);
-          }, function(err) { utils.log('Error transfering liquid SBD post rewards: ' + err); });
+          }, function(err) { utils.log('Error transfering liquid HBD post rewards: ' + err); });
         }
 
-				// If there are liquid STEEM rewards, withdraw them to the specified account
+				// If there are liquid HIVE rewards, withdraw them to the specified account
         if(parseFloat(account.reward_steem_balance) > 0 && config.post_rewards_withdrawal_account && config.post_rewards_withdrawal_account != '') {
 
           // Send liquid post rewards to the specified account
           client.broadcast.transfer({ amount: account.reward_steem_balance, from: config.account, to: config.post_rewards_withdrawal_account, memo: 'Liquid Post Rewards Withdrawal' }, dsteem.PrivateKey.fromString(config.active_key)).then(function(response) {
             utils.log('$$$ Auto withdrawal - liquid post rewards: ' + account.reward_steem_balance + ' sent to @' + config.post_rewards_withdrawal_account);
-          }, function(err) { utils.log('Error transfering liquid STEEM post rewards: ' + err); });
+          }, function(err) { utils.log('Error transfering liquid HIVE post rewards: ' + err); });
         }
       }
     }, function(err) { utils.log('Error claiming rewards...will try again next time. (err: ' + err + ')'); });
@@ -1187,8 +1187,8 @@ function processWithdrawals() {
   if(config.backup_mode)
     return;
 
-  var has_sbd = config.currencies_accepted.indexOf('SBD') >= 0 && parseFloat(account.sbd_balance) > 0;
-  var has_steem = config.currencies_accepted.indexOf('STEEM') >= 0 && parseFloat(account.balance) > 0;
+  var has_sbd = config.currencies_accepted.indexOf('HBD') >= 0 && parseFloat(account.sbd_balance) > 0;
+  var has_steem = config.currencies_accepted.indexOf('HIVE') >= 0 && parseFloat(account.balance) > 0;
 
   if (has_sbd || has_steem) {
 
@@ -1238,30 +1238,30 @@ function processWithdrawals() {
           }
 
           if(has_sbd) {
-            // Check if there is already an SBD withdrawal to this account
-            var withdrawal = withdrawals.find(w => w.to == to_account && w.currency == 'SBD');
+            // Check if there is already an HBD withdrawal to this account
+            var withdrawal = withdrawals.find(w => w.to == to_account && w.currency == 'HBD');
 
             if(withdrawal) {
               withdrawal.amount += parseFloat(account.sbd_balance) * (withdrawal_account.stake / total_stake) * (parseFloat(delegator.vesting_shares) / total_vests) - 0.001;
             } else {
               withdrawals.push({
                 to: to_account,
-                currency: 'SBD',
+                currency: 'HBD',
                 amount: parseFloat(account.sbd_balance) * (withdrawal_account.stake / total_stake) * (parseFloat(delegator.vesting_shares) / total_vests) - 0.001
               });
             }
           }
 
           if(has_steem) {
-            // Check if there is already a STEEM withdrawal to this account
-            var withdrawal = withdrawals.find(w => w.to == to_account && w.currency == 'STEEM');
+            // Check if there is already a HIVE withdrawal to this account
+            var withdrawal = withdrawals.find(w => w.to == to_account && w.currency == 'HIVE');
 
             if(withdrawal) {
               withdrawal.amount += parseFloat(account.balance) * (withdrawal_account.stake / total_stake) * (parseFloat(delegator.vesting_shares) / total_vests) - 0.001;
             } else {
               withdrawals.push({
                 to: to_account,
-                currency: 'STEEM',
+                currency: 'HIVE',
                 amount: parseFloat(account.balance) * (withdrawal_account.stake / total_stake) * (parseFloat(delegator.vesting_shares) / total_vests) - 0.001
               });
             }
@@ -1269,30 +1269,30 @@ function processWithdrawals() {
         }
       } else {
         if(has_sbd) {
-          // Check if there is already an SBD withdrawal to this account
-          var withdrawal = withdrawals.find(w => w.to == withdrawal_account.name && w.currency == 'SBD');
+          // Check if there is already an HBD withdrawal to this account
+          var withdrawal = withdrawals.find(w => w.to == withdrawal_account.name && w.currency == 'HBD');
 
           if(withdrawal) {
             withdrawal.amount += parseFloat(account.sbd_balance) * withdrawal_account.stake / total_stake - 0.001;
           } else {
             withdrawals.push({
               to: withdrawal_account.name,
-              currency: 'SBD',
+              currency: 'HBD',
               amount: parseFloat(account.sbd_balance) * withdrawal_account.stake / total_stake - 0.001
             });
           }
         }
 
         if(has_steem) {
-          // Check if there is already a STEEM withdrawal to this account
-          var withdrawal = withdrawals.find(w => w.to == withdrawal_account.name && w.currency == 'STEEM');
+          // Check if there is already a HIVE withdrawal to this account
+          var withdrawal = withdrawals.find(w => w.to == withdrawal_account.name && w.currency == 'HIVE');
 
           if(withdrawal) {
             withdrawal.amount += parseFloat(account.balance) * withdrawal_account.stake / total_stake - 0.001;
           } else {
             withdrawals.push({
               to: withdrawal_account.name,
-              currency: 'STEEM',
+              currency: 'HIVE',
               amount: parseFloat(account.balance) * withdrawal_account.stake / total_stake - 0.001
             });
           }
@@ -1398,9 +1398,9 @@ function loadPrices() {
       try {
         steem_price = parseFloat(JSON.parse(data)[0].price_usd);
 
-        utils.log("Loaded STEEM price: " + steem_price);
+        utils.log("Loaded HIVE price: " + steem_price);
       } catch (err) {
-        utils.log('Error loading STEEM price: ' + err);
+        utils.log('Error loading HIVE price: ' + err);
       }
     });
 
@@ -1409,9 +1409,9 @@ function loadPrices() {
       try {
         sbd_price = parseFloat(JSON.parse(data)[0].price_usd);
 
-        utils.log("Loaded SBD price: " + sbd_price);
+        utils.log("Loaded HBD price: " + sbd_price);
       } catch (err) {
-        utils.log('Error loading SBD price: ' + err);
+        utils.log('Error loading HBD price: ' + err);
       }
     });
   } else if (config.price_source && config.price_source.startsWith('http')) {
@@ -1420,37 +1420,37 @@ function loadPrices() {
         sbd_price = parseFloat(JSON.parse(data).sbd_price);
         steem_price = parseFloat(JSON.parse(data).steem_price);
 
-        utils.log("Loaded STEEM price: " + steem_price);
-        utils.log("Loaded SBD price: " + sbd_price);
+        utils.log("Loaded HIVE price: " + steem_price);
+        utils.log("Loaded HBD price: " + sbd_price);
       } catch (err) {
-        utils.log('Error loading STEEM/SBD prices: ' + err);
+        utils.log('Error loading HIVE/HBD prices: ' + err);
       }
     });
   } else {
-    // Load STEEM price in BTC from bittrex and convert that to USD using BTC price in coinmarketcap
+    // Load HIVE price in BTC from bittrex and convert that to USD using BTC price in coinmarketcap
     request.get('https://global.bittrex.com/api/v1.1/public/getticker?market=USD-BTC', function (e, r, data) {
       request.get('https://global.bittrex.com/api/v1.1/public/getticker?market=BTC-HIVE', function (e, r, btc_data) {
         try {
           steem_price = parseFloat(JSON.parse(data).result.Last) * parseFloat(JSON.parse(btc_data).result.Last);
-          utils.log('Loaded STEEM Price from Bittrex: ' + steem_price);
+          utils.log('Loaded HIVE Price from Bittrex: ' + steem_price);
         } catch (err) {
-          utils.log('Error loading STEEM price from Bittrex: ' + err);
+          utils.log('Error loading HIVE price from Bittrex: ' + err);
         }
       });
 
       request.get('https://global.bittrex.com/api/v1.1/public/getticker?market=BTC-HBD', function (e, r, btc_data) {
         try {
           sbd_price = parseFloat(JSON.parse(data).result.Last) * parseFloat(JSON.parse(btc_data).result.Last);
-          utils.log('Loaded SBD Price from Bittrex: ' + sbd_price);
+          utils.log('Loaded HBD Price from Bittrex: ' + sbd_price);
         } catch (err) {
-          utils.log('Error loading SBD price from Bittrex: ' + err);
+          utils.log('Error loading HBD price from Bittrex: ' + err);
         }
       });
     });
   }
 }
 
-function getUsdValue(bid) { return bid.amount * ((bid.currency == 'SBD') ? sbd_price : steem_price); }
+function getUsdValue(bid) { return bid.amount * ((bid.currency == 'HBD') ? sbd_price : steem_price); }
 
 function logFailedBid(bid, message) {
   try {
