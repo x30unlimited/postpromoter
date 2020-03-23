@@ -1,6 +1,6 @@
 var fs        = require("fs");
 var request   = require("request");
-var steem     = require('steem');
+var steem     = require('steem-js-patched');
 var dsteem    = require('dsteem');
 var utils     = require('./utils');
 var reverse   = require('./reversal')
