@@ -1,6 +1,6 @@
 var fs        = require("fs");
 var request   = require("request");
-var steem     = require('hive-steem');
+var steem     = require('hive-stream');
 var dsteem    = require('dsteem');
 var utils     = require('./utils');
 var reverse   = require('./reversal')
