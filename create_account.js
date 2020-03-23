@@ -1,4 +1,4 @@
-const dsteem     = require('dsteem')
+const dsteem     = require('@hivechain/dsteem')
 const fs         = require('fs')
 const config     = JSON.parse(fs.readFileSync('./config.json'))
 const client     = new dsteem.Client('https://api.steemit.com')
