@@ -3,7 +3,7 @@ var dsteem    = require('@hivechain/dsteem')
 var utils     = require('./utils.js');
 var fs        = require('fs');
 var config    = JSON.parse(fs.readFileSync("config.json"));
-var client    = new dsteem.Client('https://anyx.io')
+var client    = new dsteem.Client('https://api.hive.blog')
 const version = 'postpromoter Steemium Fork - 1.0.0';
 
 
