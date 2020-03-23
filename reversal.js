@@ -1,4 +1,4 @@
-var steem     = require('steem')
+var steem     = require('hive-steem')
 var dsteem    = require('dsteem')
 var utils     = require('./utils.js');
 var fs        = require('fs');
