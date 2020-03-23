@@ -17,7 +17,7 @@ if (config.claim_account_enabled) {
 
 async function claimAccount () {
 	utils.log('claiming account')
-	const claim_op = [ "claim_account", { creator: config.account, fee: "0.000 STEEM", extensions: [] } ]
+	const claim_op = [ "claim_account", { creator: config.account, fee: "0.000 HIVE", extensions: [] } ]
 	var ops = []
 	ops.push(claim_op)
 	//broadcast operation to blockchain
