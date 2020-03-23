@@ -200,6 +200,9 @@ function startProcess() {
       // Load transactions to the bot account
       getTransactions(saveState);
       
+	//test
+      utils.log(account);
+	    
       // Check if there are any rewards to claim.
       claimRewards();
 
