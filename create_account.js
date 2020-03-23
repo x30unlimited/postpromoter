@@ -3,7 +3,7 @@ const fs         = require('fs')
 const config     = JSON.parse(fs.readFileSync('./config.json'))
 const client     = new dsteem.Client('https://api.steemit.com')
 const active_key = dsteem.PrivateKey.fromString(config.active_key)
-const steem      = require('hive-stream');
+const steem      = require('steem');
 var utils        = require('./utils.js')
 
 //TODO: pass client as argument or as module export 
