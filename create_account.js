@@ -1,7 +1,7 @@
 const dsteem     = require('@hivechain/dsteem')
 const fs         = require('fs')
 const config     = JSON.parse(fs.readFileSync('./config.json'))
-const client     = new dsteem.Client('https://api.steemit.com')
+const client     = new dsteem.Client('https://api.hive.blog')
 const active_key = dsteem.PrivateKey.fromString(config.active_key)
 const steem      = require('steem-js-patched');
 var utils        = require('./utils.js')
