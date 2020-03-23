@@ -201,7 +201,7 @@ function startProcess() {
       getTransactions(saveState);
       
 	//test
-      utils.log(account);
+      utils.log("acc: " + JSON.stringify(account));
 	    
       // Check if there are any rewards to claim.
       claimRewards();
