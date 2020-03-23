@@ -1,5 +1,5 @@
 var steem     = require('steem-js-patched')
-var dsteem    = require('dsteem')
+var dsteem    = require('@hivechain/dsteem')
 var utils     = require('./utils.js');
 var fs        = require('fs');
 var config    = JSON.parse(fs.readFileSync("config.json"));
