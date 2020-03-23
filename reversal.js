@@ -14,8 +14,8 @@ function checkAmount(bid_transfer, reversal_transfer, reversal_price, steem_pric
   let reversal_amount   = parseFloat(reversal_transfer.amount)
   let reversal_currency = utils.getCurrency(reversal_transfer.amount)
   
-  let bid_usd         = bid_currency == 'STEEM' ? bid_amount * steem_price : bid_amount * sbd_price
-  let reversal_usd    = reversal_currency == 'STEEM' ? reversal_amount * steem_price : reversal_amount * sbd_price
+  let bid_usd         = bid_currency == 'HIVE' ? bid_amount * steem_price : bid_amount * sbd_price
+  let reversal_usd    = reversal_currency == 'HIVE' ? reversal_amount * steem_price : reversal_amount * sbd_price
   let _reversal_price = bid_usd * reversal_price
   let leftovers_usd   = reversal_usd - _reversal_price
 
@@ -56,7 +56,7 @@ function reverseVote(vote_to_reverse, leftovers_usd, pubkey, reversal_transfer, 
     if (leftovers_usd <= 0) return resolve()
     // send leftovers back
     let currency = utils.getCurrency(reversal_transfer.amount)
-    let leftovers = (currency == 'STEEM') ? leftovers_usd / steem_price : leftovers_usd / sbd_price
+    let leftovers = (currency == 'HIVE') ? leftovers_usd / steem_price : leftovers_usd / sbd_price
     leftovers = parseFloat(leftovers).toFixed(3) + ' ' + currency
     let memo = config.transfer_memos['reversal_leftovers']
     memo = memo.replace(/{postURL}/g, postURL);
