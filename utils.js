@@ -24,7 +24,6 @@ var HOURS = 60 * 60;
     });
 
     client.database.getCurrentMedianHistoryPrice().then(function (t) {
-	    log("t: " + JSON.stringify(t));
       steemPrice = parseFloat(t.base) / parseFloat(t.quote);
     }, function(e) {
       log('Error loading steem price: ' + e);
