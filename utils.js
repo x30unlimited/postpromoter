@@ -17,13 +17,14 @@ var HOURS = 60 * 60;
 
  function updateSteemVariables(client) {
     client.database.call('get_reward_fund', ['post']).then(function (t) {
-      rewardBalance = parseFloat(t.reward_balance.replace(" STEEM", ""));
+      rewardBalance = parseFloat(t.reward_balance.replace(" HIVE", ""));
       recentClaims = t.recent_claims;
     }, function(e) {
       log('Error loading reward fund: ' + e);
     });
 
     client.database.getCurrentMedianHistoryPrice().then(function (t) {
+	    log("t: " + JSON.stringify(t));
       steemPrice = parseFloat(t.base) / parseFloat(t.quote);
     }, function(e) {
       log('Error loading steem price: ' + e);
@@ -31,7 +32,7 @@ var HOURS = 60 * 60;
 
     client.database.getDynamicGlobalProperties().then(function (t) {
       votePowerReserveRate = t.vote_power_reserve_rate;
-      totalVestingFund = parseFloat(t.total_vesting_fund_steem.replace(" STEEM", ""));
+      totalVestingFund = parseFloat(t.total_vesting_fund_steem.replace(" HIVE", ""));
       totalVestingShares = parseFloat(t.total_vesting_shares.replace(" VESTS", ""));
       steem_per_mvests = ((totalVestingFund / totalVestingShares) * 1000000);
       sbd_print_percentage = t.sbd_print_rate / 10000
