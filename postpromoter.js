@@ -937,6 +937,19 @@ function powerUp(amount, currency) {
 			]
 		], dsteem.PrivateKey.fromString(config.active_key));
 	}
+	
+	if(config.auto_cash_out && config.auto_cash_out === true) {
+		client.broadcast.sendOperations([
+			Operation = [
+				'transfer', {
+					'from': config.account,
+					'to': config.owner_account,
+					'amount': utils.format(amount, 3) + ' ' + currency,
+					'memo': ''
+				}
+			]
+		], dsteem.PrivateKey.fromString(config.active_key));
+	}
 }
 
 function checkGlobalBlacklist(author, sender, callback) {
