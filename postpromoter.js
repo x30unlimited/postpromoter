@@ -161,7 +161,7 @@ function startProcess() {
         utils.log((config.backup_mode ? '* BACKUP MODE *' : '') + 'Voting Power: ' + utils.format(vp / 100) + '% | Time until next round: ' + utils.toTimer(utils.timeTilFullPower(vp)) + ' | Bids: ' + outstanding_bids.length + ' | ' + bids_sbd + ' SBD | ' + bids_steem + ' STEEM');
       }
       // We are at 100% voting power - time to vote!
-      let min_vp = (process.env.NODE_ENV == 'test') ? 1000 : 10000
+      let min_vp = test_min_vp
       
       // Wrong state fix
       if (vp >= min_vp && next_round.length > 0 && outstanding_bids.length == 0 && round_end_timeout < 0) {
