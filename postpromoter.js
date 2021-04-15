@@ -756,7 +756,7 @@ function validatePost(author, permlink, isVoting, callback, retries) {
         }
 
         // Check if this post is below the minimum post age
-        if(config.min_post_age && config.min_post_age > 0 && (new Date() - created + (time_until_vote * 1000)) < (config.min_post_age * 60 * 1000)) {
+        if(config.min_post_age && config.min_post_age > 0 && (new Date() - created/* + (time_until_vote * 1000)*/) < (config.min_post_age * 60 * 1000)) {
           if(callback)
             callback('min_age');
           
