@@ -1436,7 +1436,7 @@ function loadPrices() {
         utils.log('Error loading STEEM/SBD prices: ' + err);
       }
     });
-  } else {
+  } else if(config.price_source == 'bittrex') {
     // Load STEEM price in BTC from bittrex and convert that to USD using BTC price in coinmarketcap
     request.get('https://global.bittrex.com/api/v1.1/public/getticker?market=USD-BTC', function (e, r, data) {
       request.get('https://global.bittrex.com/api/v1.1/public/getticker?market=BTC-STEEM', function (e, r, btc_data) {
@@ -1456,6 +1456,21 @@ function loadPrices() {
           utils.log('Error loading SBD price from Bittrex: ' + err);
         }
       });
+    });
+  } else {
+    request.get('https://api.coingecko.com/api/v3/simple/price?ids=steem-dollars%2Csteem&vs_currencies=usd', function (e, r, data) {
+      try {
+        steem_price = parseFloat(JSON.parse(data)['steem'].usd);
+        utils.log('Loaded STEEM Price from CoinGecko: ' + steem_price);
+      } catch (err) {
+        utils.log('Error loading STEEM price from CoinGecko: ' + err);
+      }
+      try {
+        sbd_price = parseFloat(JSON.parse(data)['steem-dollars'].usd);
+        utils.log('Loaded SBD Price from CoinGecko: ' + sbd_price);
+      } catch (err) {
+        utils.log('Error loading SBD price from CoinGecko: ' + err);
+      }
     });
   }
 }
