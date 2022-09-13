@@ -401,7 +401,7 @@ function getTransactions(callback) {
   if (first_load && transactions.length > 0) {
     utils.log('First run - loading all transactions since last transaction processed: ' + transactions[transactions.length - 1]);
     last_trx_id = transactions[transactions.length - 1];
-    num_trans = 1000;
+    num_trans = 100;
   }
 
   client.database.call('get_account_history', [account.name, -1, num_trans]).then(async function (result) {
