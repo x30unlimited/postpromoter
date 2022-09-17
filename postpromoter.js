@@ -390,7 +390,7 @@ function getTransactions(callback) {
   isRunningTx = true;
 	
   var last_trx_id = null;
-  var num_trans = 50;
+  var num_trans = 100;
 
   // If this is the first time the bot is ever being run, start with just the most recent transaction
   if (first_load && transactions.length == 0) {
