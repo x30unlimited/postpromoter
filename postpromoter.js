@@ -390,7 +390,7 @@ function getTransactions(callback) {
   isRunningTx = true;
 	
   var last_trx_id = null;
-  var num_trans = 100;
+  var num_trans = 50;
 
   // If this is the first time the bot is ever being run, start with just the most recent transaction
   if (first_load && transactions.length == 0) {
@@ -400,18 +400,23 @@ function getTransactions(callback) {
   // If this is the first time the bot is run after a restart get a larger list of transactions to make sure none are missed
   if (first_load && transactions.length > 0) {
     utils.log('First run - loading all transactions since last transaction processed: ' + transactions[transactions.length - 1]);
-    last_trx_id = transactions[transactions.length - 1];
-    num_trans = 100;
+    last_trx_id = transactions[0];
+    num_trans = 300;
   }
 
-  client.database.call('get_account_history', [account.name, -1, num_trans]).then(async function (result) {
-    if (typeof result === 'undefined') {
-      utils.log('get_account_history: result is undefined !');
+  request.get('https://sds.steemworld.org/account_history_api/getHistoryFromStartId/'+account.name+'/-1/'+num_trans, async function (e, r, data) { try {
+    result = JSON.parse(data).result.rows;
+    result.forEach(function(val, index){
+      result[index] = [
+        val[0],
+        { 
+          block: val[2],
+          trx_id: val[5] ? '0000000000000000000000000000000000000000' : 'tx-'+val[2]+'-'+val[3],
+          op: val[6],
+        }
+      ];
+    })
 
-      isRunningTx = false;
-      return;
-    }  
-	  
     var bid_history = result.filter((x) => { return (x[1].op[0] == 'transfer' && x[1].op[1].to == config.account) }).map((x) => x[1].op[1])
     bid_history.forEach((bid) => { // decrypting all bidhistory memos might seem to be redundant, but this way we clear the ground for latter original bid transfer search
       if (bid.memo.startsWith('#') && bid.memo.split(' ').length == 1) {
@@ -443,6 +448,8 @@ function getTransactions(callback) {
 
     first_load = false;
     var reached_starting_trx = false;
+
+    result.reverse();
 
     for (var i = 0; i < result.length; i++) {
       var trans = result[i];
@@ -665,8 +672,8 @@ function getTransactions(callback) {
         // Save the ID of the last transaction that was processed.
         transactions.push(trans[1].trx_id);
 
-        // Don't save more than the last 250 transaction IDs in the state
-        if(transactions.length > 250)
+        // Don't save more than the last 300 transaction IDs in the state
+        if(transactions.length > 300)
           transactions.shift();
       }
     }
@@ -675,13 +682,15 @@ function getTransactions(callback) {
       callback();
 
     isRunningTx = false;
-  }, function(err) {
-    logError('Error loading account history: ' + err);
-
+  } catch (err) {
+    utils.log('get_account_history error: ' + err);
+    
     if (callback)
       callback();
 
     isRunningTx = false;
+    return;
+  }
   });
 }
 
