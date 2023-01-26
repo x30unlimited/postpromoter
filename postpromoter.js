@@ -401,7 +401,7 @@ function getTransactions(callback) {
   if (first_load && transactions.length > 0) {
     utils.log('First run - loading all transactions since last transaction processed: ' + transactions[transactions.length - 1]);
     last_trx_id = transactions[0];
-    num_trans = 300;
+    num_trans = 200;
   }
 
   request.get('https://sds.steemworld.org/account_history_api/getHistoryFromStartId/'+account.name+'/-1/'+num_trans, async function (e, r, data) { try {
