@@ -90,8 +90,10 @@ var HOURS = 60 * 60;
          var used_power = Math.round((current_power * weight) / STEEMIT_100_PERCENT);
          used_power = Math.round((used_power + max_vote_denom - 1) / max_vote_denom);
 
-         var rshares = Math.round((effective_vesting_shares * used_power) / (STEEMIT_100_PERCENT))
-
+         var rshares = effective_vesting_shares * used_power;
+         rshares = ((rshares + 2e12) * (rshares + 2e12) - 4e24) / (rshares + 8e12);
+	 rshares = Math.round(rshares / STEEMIT_100_PERCENT);
+	     
 	 log('rshares: ' + rshares + ',\neffective_vesting_shares: ' + effective_vesting_shares + ',\nused_power: ' + used_power + ',\ncurrent_power: ' + current_power);
 	
          return rshares;
@@ -130,7 +132,8 @@ function timeTilFullPower(cur_power){
  function getVestingShares(account) {
      var effective_vesting_shares = parseFloat(account.vesting_shares.replace(" VESTS", ""))
        + parseFloat(account.received_vesting_shares.replace(" VESTS", ""))
-       - parseFloat(account.delegated_vesting_shares.replace(" VESTS", ""));
+       - parseFloat(account.delegated_vesting_shares.replace(" VESTS", ""))
+       - parseFloat(account.vesting_withdraw_rate.replace(" VESTS", ""));
      return effective_vesting_shares;
  }
 
