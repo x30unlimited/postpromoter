@@ -94,9 +94,7 @@ var HOURS = 60 * 60;
          rshares = ((rshares + 2e12) * (rshares + 2e12) - 4e24) / (rshares + 8e12);
 	 rshares = Math.round(rshares);
 	     
-	 log('rshares: ' + rshares + ',\neffective_vesting_shares: ' + effective_vesting_shares + ',\nused_power: ' + used_power + ',\ncurrent_power: ' + current_power);
-	
-         return rshares;
+	 return rshares;
 
      }
  }
@@ -110,9 +108,7 @@ var HOURS = 60 * 60;
            * rewardBalance / recentClaims
            * steemPrice;
 
-	 log('rewardBalance: ' + rewardBalance + ',\nrecentClaims: ' + recentClaims);
-	
-         return voteValue;
+	 return voteValue;
 
      }
  }
