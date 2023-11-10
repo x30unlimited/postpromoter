@@ -90,9 +90,9 @@ var HOURS = 60 * 60;
          var used_power = Math.round((current_power * weight) / STEEMIT_100_PERCENT);
          used_power = Math.round((used_power + max_vote_denom - 1) / max_vote_denom);
 
-         var rshares = effective_vesting_shares * used_power;
+         var rshares = effective_vesting_shares * used_power / STEEMIT_100_PERCENT;
          rshares = ((rshares + 2e12) * (rshares + 2e12) - 4e24) / (rshares + 8e12);
-	 rshares = Math.round(rshares / STEEMIT_100_PERCENT);
+	 rshares = Math.round(rshares);
 	     
 	 log('rshares: ' + rshares + ',\neffective_vesting_shares: ' + effective_vesting_shares + ',\nused_power: ' + used_power + ',\ncurrent_power: ' + current_power);
 	
