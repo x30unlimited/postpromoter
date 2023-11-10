@@ -92,6 +92,8 @@ var HOURS = 60 * 60;
 
          var rshares = Math.round((effective_vesting_shares * used_power) / (STEEMIT_100_PERCENT))
 
+	 log('rshares: ' + rshares + ',\neffective_vesting_shares: ' + effective_vesting_shares + ',\nused_power: ' + used_power + ',\ncurrent_power: ' + current_power);
+	
          return rshares;
 
      }
@@ -106,6 +108,8 @@ var HOURS = 60 * 60;
            * rewardBalance / recentClaims
            * steem_price;
 
+	 log('rewardBalance: ' + rewardBalance + ',\nrecentClaims: ' + recentClaims);
+	
          return voteValue;
 
      }
