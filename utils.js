@@ -108,7 +108,7 @@ var HOURS = 60 * 60;
      if (rewardBalance && recentClaims && steemPrice && votePowerReserveRate) {
          var voteValue = getVoteRShares(voteWeight, account, power)
            * rewardBalance / recentClaims
-           * steem_price;
+           * steemPrice;
 
 	 log('rewardBalance: ' + rewardBalance + ',\nrecentClaims: ' + recentClaims);
 	
