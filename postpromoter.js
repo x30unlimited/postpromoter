@@ -234,11 +234,12 @@ function startVoting(bids) {
   var adjusted_weight = 1;
   
   if(config.max_roi != null && config.max_roi != undefined && !isNaN(config.max_roi)) {
-    var vote_value = utils.getVoteValue(100, account, 10000, steem_price);
+    var vp = utils.getVotingPower(account);
+    var vote_value = utils.getVoteValue(100, account, vp, steem_price);
     var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
     //min_total_bids_value_usd: calculates the minimum value in USD that the total bids must have to represent a maximum ROI defined in config.json
     //'max_roi' in config.json = 10 represents a maximum ROI of 10%
-    utils.log('Vote value: ' + vote_value + ', usd: ' + vote_value_usd);
+    utils.log('VP: ' +  utils.format(vp / 100) + '%, Vote value: ' + vote_value + ', usd: ' + vote_value_usd);
 	  
     var min_total_bids_value_usd = vote_value_usd * AUTHOR_PCT * ((100 - config.max_roi) / 100 );
     utils.log('Total bids: ' + total + ', min: ' + min_total_bids_value_usd + ', roi: ' + config.max_roi);
