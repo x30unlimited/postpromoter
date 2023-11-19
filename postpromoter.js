@@ -872,7 +872,21 @@ function checkPost(memo, amount, currency, sender, retries) {
 				refund(sender, amount, currency, error);
 				return;
 			}
+			
+			// Do max value vote if round is empty and return the difference
+			if(outstanding_bids.length == 0){
+				var vote_value = utils.getVoteValue(100, account, 10000, steem_price);
+				var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
+				var new_bid_value = amount * ((currency == 'SBD') ? sbd_price : steem_price);
 
+				var refund_value = Math.ceil((new_bid_value - vote_value_usd * AUTHOR_PCT * config.round_fill_limit) / ((currency == 'SBD') ? sbd_price : steem_price) * 1000) / 1000;
+
+				if(refund_value > 0){
+					refund(sender, refund_value, currency, 'overbid');
+					amount -= refund_value;
+				}
+			}
+			
 			// Check if the round is full
 			if(checkRoundFillLimit(outstanding_bids, amount, currency)) {
 				if(checkRoundFillLimit(next_round, amount, currency)) {
