@@ -756,6 +756,15 @@ function validatePost(author, permlink, isVoting, callback, retries) {
             return;
         }
 
+        votes = result.active_votes.filter(function(vote) { return vote.voter == 'tipu'; });
+
+        if ((votes.length > 0 && votes[0].weight > 0)) {
+            if(callback)
+              callback("Cannot vote a post already voted by tipu :| Please try another post.");
+            
+            return;
+        }
+
         // Check if this post has been flagged by any flag signal accounts
         if(config.blacklist_settings.flag_signal_accounts) {
           var flags = result.active_votes.filter(function(v) { return v.percent < 0 && config.blacklist_settings.flag_signal_accounts.indexOf(v.voter) >= 0; });
@@ -902,8 +911,11 @@ function checkPost(memo, amount, currency, sender, retries) {
 			var round = (push_to_next_round || error == 'min_age') ? next_round : outstanding_bids;
 
 			// Check if there is already a bid for this post in the current round
-			var existing_bid = round.find(bid => bid.url == memo);
-
+			var existing_bid = outstanding_bids.find(bid => bid.url == memo);
+			if(!existing_bid) {
+				existing_bid = next_round.find(bid => bid.url == memo);
+			}
+			
 			if(existing_bid) {
 				// There is already a bid for this post in the current round
 				utils.log('Existing Bid Found - New Amount: ' + amount + ', Total Amount: ' + (existing_bid.amount + amount));
@@ -918,14 +930,21 @@ function checkPost(memo, amount, currency, sender, retries) {
 					new_amount = existing_bid.amount + amount * steem_price / sbd_price;
 				}
 
-				var max_bid = config.max_bid ? parseFloat(config.max_bid) : 9999;
+				var vote_value = utils.getVoteValue(100, account, test_min_vp, steem_price);
+				var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
+				var new_bid_value = new_amount;
 
-				// Check that the new total doesn't exceed the max bid amount per post
-				if (new_amount > max_bid)
-					refund(sender, amount, currency, 'above_max_bid');
-				else {
-					existing_bid.amount = new_amount;
-					powerUp(amount - (push_to_next_round ? 0.001 : 0), currency);
+				var refund_value = Math.ceil((new_bid_value - vote_value_usd * AUTHOR_PCT * config.round_fill_limit) / ((currency == 'SBD') ? sbd_price : steem_price) * 1000) / 1000 ;
+
+				if(refund_value > 0){
+					refund(sender, refund_value, currency, 'overbid');
+					amount -= refund_value;
+					new_bid_value -= refund_value * ((currency == 'SBD') ? sbd_price : steem_price);
+				}
+				
+				if(amount > 0){
+					existing_bid.amount = new_bid_value;
+					powerUp(amount, currency);
 				}
 			} else {
 				// All good - push to the array of valid bids for this round
