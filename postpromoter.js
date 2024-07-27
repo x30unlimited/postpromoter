@@ -756,11 +756,13 @@ function validatePost(author, permlink, isVoting, callback, retries) {
             return;
         }
 
-        votes = result.active_votes.filter(function(vote) { return vote.voter == 'tipu'; });
+        votes = result.active_votes.filter(function(vote) {
+            return config.no_vote.includes(vote.voter);
+        });
 
         if ((votes.length > 0 && votes[0].weight > 0)) {
             if(callback)
-              callback("Cannot vote a post already voted by tipu :| Please try another post.");
+              callback("Cannot vote a post already voted by " + votes[0].voter + " :| Please try another post.");
             
             return;
         }
