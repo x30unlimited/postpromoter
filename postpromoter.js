@@ -919,6 +919,9 @@ function checkPost(memo, amount, currency, sender, retries) {
 			}
 			
 			if(existing_bid) {
+				refund(sender, amount, currency, 'A bid with this link already exists !');
+
+				/*
 				// There is already a bid for this post in the current round
 				utils.log('Existing Bid Found - New Amount: ' + amount + ', Total Amount: ' + (existing_bid.amount + amount));
 
@@ -949,7 +952,7 @@ function checkPost(memo, amount, currency, sender, retries) {
 				if(amount > 0){
 					existing_bid.amount = new_bid_value;
 					powerUp(amount, currency);
-				}
+				}*/
 			} else {
 				// All good - push to the array of valid bids for this round
 				utils.log('Valid Bid - Amount: ' + amount + ' ' + currency + ', Url: ' + memo);
