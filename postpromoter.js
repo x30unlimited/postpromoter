@@ -938,6 +938,8 @@ function checkPost(memo, amount, currency, sender, retries) {
 
 				var refund_value = Math.ceil((new_bid_value - vote_value_usd * AUTHOR_PCT * config.round_fill_limit) / ((currency == 'SBD') ? sbd_price : steem_price) * 1000) / 1000 ;
 
+				utils.log('Vote : ' + vote_value + ', Vote USD: ' + vote_value_usd + ', New Amount: ' + new_bid_value + ' ' + currency + ', Refund: ' + refund_value + ' ' + currency);
+				
 				if(refund_value > 0){
 					refund(sender, refund_value, currency, 'overbid');
 					amount -= refund_value;
