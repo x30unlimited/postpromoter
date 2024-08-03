@@ -287,8 +287,8 @@ function startVoting(bids) {
   
   if(config.max_roi != null && config.max_roi != undefined && !isNaN(config.max_roi)) {
     var vp = utils.getVotingPower(account);
-    var vote_value = utils.getVoteValue(100, account, vp, steem_price);
-    var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
+    var vote_value = utils.getVoteValue(100, account, vp);
+    var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price, steem_price)
     //min_total_bids_value_usd: calculates the minimum value in USD that the total bids must have to represent a maximum ROI defined in config.json
     //'max_roi' in config.json = 10 represents a maximum ROI of 10%
     utils.log('VP: ' +  utils.format(vp / 100) + '%, Vote value: ' + vote_value + ', usd: ' + vote_value_usd);
@@ -754,8 +754,8 @@ function checkRoundFillLimit(round, amount, currency) {
   if(config.round_fill_limit == null || config.round_fill_limit == undefined || isNaN(config.round_fill_limit))
     return false;
 
-  var vote_value = utils.getVoteValue(100, account, 10000, steem_price);
-  var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
+  var vote_value = utils.getVoteValue(100, account, 10000);
+  var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price, steem_price)
   var bid_value = round.reduce(function(t, b) { return t + b.amount * ((b.currency == 'SBD') ? sbd_price : steem_price) }, 0);
   var new_bid_value = amount * ((currency == 'SBD') ? sbd_price : steem_price);
 
@@ -938,8 +938,8 @@ function checkPost(memo, amount, currency, sender, retries) {
 			
 			// Do max value vote if round is empty and return the difference
 			if(outstanding_bids.length == 0){
-				var vote_value = utils.getVoteValue(100, account, 10000, steem_price);
-				var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
+				var vote_value = utils.getVoteValue(100, account, 10000);
+				var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price, steem_price)
 				var new_bid_value = amount * ((currency == 'SBD') ? sbd_price : steem_price);
 
 				var refund_value = Math.ceil((new_bid_value - vote_value_usd * AUTHOR_PCT * config.round_fill_limit) / ((currency == 'SBD') ? sbd_price : steem_price) * 1000) / 1000;
@@ -987,8 +987,8 @@ function checkPost(memo, amount, currency, sender, retries) {
 					new_amount = existing_bid.amount + amount * steem_price / sbd_price;
 				}
 
-				var vote_value = utils.getVoteValue(100, account, test_min_vp, steem_price);
-				var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price)
+				var vote_value = utils.getVoteValue(100, account, test_min_vp);
+				var vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price, steem_price)
 				var new_bid_value = new_amount;
 
 				var refund_value = Math.ceil((new_bid_value - vote_value_usd * AUTHOR_PCT * config.round_fill_limit) / ((currency == 'SBD') ? sbd_price : steem_price) * 1000) / 1000 ;
