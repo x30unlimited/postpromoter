@@ -70,7 +70,7 @@ function startup() {
       next();
     });
 
-    app.get('/api/bids', (req, res) => res.json({ current_round: outstanding_bids, last_round: last_round }));
+    app.get('/api/bids', (req, res) => res.json({ current_round: outstanding_bids, next_round: next_round, last_round: last_round }));
     app.get('/', (req, res) => {
         res.send(`
             <!DOCTYPE html>
@@ -85,6 +85,8 @@ function startup() {
                 <div class="container my-5">
                     <h1 class="mb-4">Current Round</h1>
                     <div id="currentRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
+                    <h1 class="mb-4">Next Round</h1>
+                    <div id="nextRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
                     <h1 class="mb-4 mt-5">Last Round</h1>
                     <div id="lastRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
                 </div>
@@ -116,6 +118,7 @@ function startup() {
                             }
 
                             populateCards(data.current_round, 'currentRound');
+			    populateCards(data.next_round, 'nextRound');
                             populateCards(data.last_round, 'lastRound');
                         });
                 </script>
