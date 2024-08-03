@@ -949,9 +949,15 @@ function checkPost(memo, amount, currency, sender, retries) {
 					amount -= refund_value;
 				}
 			}
+
+			// Check if there is already a bid for this post in the current round
+			var existing_bid = outstanding_bids.find(bid => bid.url == memo);
+			if(!existing_bid) {
+				existing_bid = next_round.find(bid => bid.url == memo);
+			}
 			
 			// Check if the round is full
-			if(checkRoundFillLimit(outstanding_bids, amount, currency)) {
+			if(!existing_bid && checkRoundFillLimit(outstanding_bids, amount, currency)) {
 				if(checkRoundFillLimit(next_round, amount, currency)) {
 					refund(sender, amount, currency, 'next_round_full');
 					return;
@@ -963,16 +969,10 @@ function checkPost(memo, amount, currency, sender, retries) {
 
 			// Add the bid to the current round or the next round if the current one is full or the post is too new
 			var round = (push_to_next_round || error == 'min_age') ? next_round : outstanding_bids;
-
-			// Check if there is already a bid for this post in the current round
-			var existing_bid = outstanding_bids.find(bid => bid.url == memo);
-			if(!existing_bid) {
-				existing_bid = next_round.find(bid => bid.url == memo);
-			}
 			
 			if(existing_bid) {
 				refund(sender, amount, currency, 'A bid with this link already exists !');
-
+				return;
 				/*
 				// There is already a bid for this post in the current round
 				utils.log('Existing Bid Found - New Amount: ' + amount + ', Total Amount: ' + (existing_bid.amount + amount));
