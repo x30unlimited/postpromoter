@@ -71,6 +71,58 @@ function startup() {
     });
 
     app.get('/api/bids', (req, res) => res.json({ current_round: outstanding_bids, last_round: last_round }));
+    app.get('/', (req, res) => {
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Bid Rounds</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+            </head>
+            <body>
+                <div class="container my-5">
+                    <h1 class="mb-4">Current Round</h1>
+                    <div id="currentRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
+                    <h1 class="mb-4 mt-5">Last Round</h1>
+                    <div id="lastRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+                <script>
+                    fetch('/api/bids')
+                        .then(response => response.json())
+                        .then(data => {
+                            function createCard(bid) {
+                                return \`
+                                    <div class="col">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Bid from \${bid.sender}</h5>
+                                                <p class="card-text">Amount: \${bid.amount} \${bid.currency}</p>
+                                                <p class="card-text">Author: \${bid.author}</p>
+                                                <a href="\${bid.url}" class="card-link">View Post</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                \`;
+                            }
+
+                            function populateCards(round, containerId) {
+                                const container = document.getElementById(containerId);
+                                round.forEach(bid => {
+                                    container.innerHTML += createCard(bid);
+                                });
+                            }
+
+                            populateCards(data.current_round, 'currentRound');
+                            populateCards(data.last_round, 'lastRound');
+                        });
+                </script>
+            </body>
+            </html>
+        `);
+    });
     app.listen(port, () => utils.log('API running on port ' + port))
   }
 
