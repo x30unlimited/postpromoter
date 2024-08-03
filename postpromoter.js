@@ -103,7 +103,7 @@ function startup() {
                                                 <h5 class="card-title">Bid from \${bid.sender}</h5>
                                                 <p class="card-text">Amount: \${bid.amount} \${bid.currency}</p>
                                                 <p class="card-text">Author: \${bid.author}</p>
-						<p class="card-text">Vote: ${bid.weight / 100} %</p>
+						\${bid.weight !== undefined ? \`<p class="card-text">Vote: \${bid.weight / 100} %</p>\` : ''}
                                                 <a href="\${bid.url}" class="card-link">View Post</a>
                                             </div>
                                         </div>
