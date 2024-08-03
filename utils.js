@@ -99,7 +99,7 @@ var HOURS = 60 * 60;
      }
  }
 
- function getVoteValue(voteWeight, account, power, steem_price) {
+ function getVoteValue(voteWeight, account, power) {
      if (!account) {
          return;
      }
@@ -113,12 +113,12 @@ var HOURS = 60 * 60;
      }
  }
 
- function getVoteValueUSD(vote_value, sbd_price) {
+ function getVoteValueUSD(vote_value, sbd_price, steem_price) {
   const steempower_value = vote_value * 0.5
   const sbd_print_percentage_half = (0.5 * sbd_print_percentage)
   const sbd_value = vote_value * sbd_print_percentage_half
   const steem_value = vote_value * (0.5 - sbd_print_percentage_half)
-  return (sbd_value * sbd_price) + steem_value + steempower_value
+  return (sbd_value * sbd_price) + (steem_value + steempower_value) / steemPrice * steem_price
  }
 
 function timeTilFullPower(cur_power){
