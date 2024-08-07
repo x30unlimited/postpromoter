@@ -345,13 +345,13 @@ function comment(bids) {
 function sendVote(bid, retries, callback) {
   utils.log('Casting: ' + utils.format(bid.weight / 100) + '% vote cast for: @' + bid.author + '/' + bid.permlink);
   
-  validatePost(bid.author, bid.permlink, true, function(e) {
+  /*validatePost(bid.author, bid.permlink, true, function(e) {
     if(e) {
       utils.log('Post @' + bid.author + '/' + bid.permlink + ' is invalid for reason: ' + e);
 
       if(callback)
         callback();
-    } else {
+    } else {*/
       client.broadcast.vote({ voter: account.name, author: bid.author, permlink: bid.permlink, weight: bid.weight }, dsteem.PrivateKey.fromString(config.posting_key)).then(function(result) {
         if (result) {
           utils.log(utils.format(bid.weight / 100) + '% vote cast for: @' + bid.author + '/' + bid.permlink);
@@ -373,8 +373,8 @@ function sendVote(bid, retries, callback) {
             callback();
         }
       });
-    }
-  });
+  /*}
+  });*/
 }
 
 function sendComment(bid) {
