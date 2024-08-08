@@ -140,7 +140,7 @@ function startup() {
 	                    font-size: 2rem;
 	                    font-weight: bold;
 	                    margin: 1rem 0;
-	                    color: #0d6efd;
+	                    color: #d63384;
 	                }
 	            </style>
 	        </head>
@@ -232,7 +232,7 @@ function startup() {
 	                function formatTime(seconds) {
 	                    const hours = Math.floor(seconds / 3600);
 	                    const minutes = Math.floor((seconds % 3600) / 60);
-	                    const remainingSeconds = seconds % 60;
+	                    const remainingSeconds =  Math.floor(seconds % 60);
 	                    return \`\${hours.toString().padStart(2, '0')}:\${minutes.toString().padStart(2, '0')}:\${remainingSeconds.toString().padStart(2, '0')}\`;
 	                }
 	
