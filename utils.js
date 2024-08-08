@@ -204,6 +204,7 @@ function format(n, c, d, t) {
    getVoteValue: getVoteValue,
    getVoteValueUSD: getVoteValueUSD,
    timeTilFullPower: timeTilFullPower,
+   timeTilTargetPower: timeTilTargetPower,
    getVestingShares: getVestingShares,
 	 vestsToSP: vestsToSP,
    loadUserList: loadUserList,
