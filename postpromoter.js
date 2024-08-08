@@ -75,6 +75,8 @@ function startup() {
 	    let effective_vp = vp < test_min_vp ? test_min_vp : vp;
 	    const vote_value = utils.getVoteValue(100, account, effective_vp);
 	    const vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price, steem_price);
+	    const min_total_bids_value_usd = vote_value_usd * AUTHOR_PCT * ((100 - config.max_roi) / 100);
+	    const min_total_bids_value_steem = min_total_bids_value_usd / steem_price;
 	
 	    res.json({ 
 	        current_round: outstanding_bids, 
@@ -83,7 +85,8 @@ function startup() {
 	        vp: (vp / 100).toFixed(2),
 	        test_min_vp: (test_min_vp / 100).toFixed(2),
 	        vote_value: vote_value.toFixed(3),
-	        vote_value_usd: vote_value_usd.toFixed(3)
+	        vote_value_usd: vote_value_usd.toFixed(3),
+	        min_total_bids_value_steem: min_total_bids_value_steem.toFixed(3)
 	    });
 	});
 	
@@ -118,6 +121,9 @@ function startup() {
 	                            <li class="nav-item">
 	                                <a class="nav-link" href="#" id="voteValueUsd">Vote Value (USD): </a>
 	                            </li>
+	                            <li class="nav-item">
+	                                <a class="nav-link" href="#" id="minTotalBidsValueSteem">Min Bids: </a>
+	                            </li>
 	                        </ul>
 	                    </div>
 	                </div>
@@ -138,9 +144,10 @@ function startup() {
 	                        .then(response => response.json())
 	                        .then(data => {
 	                            document.getElementById('vp').innerHTML = 'VP: <strong>' + data.vp + ' %</strong>';
-	                            document.getElementById('testMinVp').innerHTML = 'Min VP: <strong>' + data.test_min_vp + '%</strong>';
+	                            document.getElementById('testMinVp').innerHTML = 'Min VP: <strong>' + data.test_min_vp + ' %</strong>';
 	                            document.getElementById('voteValue').innerHTML = 'Vote Value: <strong>' + data.vote_value + '</strong>';
 	                            document.getElementById('voteValueUsd').innerHTML = 'Vote Value (USD): <strong>' + data.vote_value_usd + '</strong>';
+	                            document.getElementById('minTotalBidsValueSteem').innerHTML = 'Min Bids (STEEM): <strong>' + data.min_total_bids_value_steem + '</strong>';
 	
 	                            function createCard(bid) {
 	                                return \`
