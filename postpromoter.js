@@ -73,22 +73,25 @@ function startup() {
     app.get('/api/bids', (req, res) => {
 	    const vp = utils.getVotingPower(account);
 	    let effective_vp = vp < test_min_vp ? test_min_vp : vp;
+	    const time_til_target_power = vp < test_min_vp ? utils.timeTilTargetPower(vp, test_min_vp) : 0;
 	    const vote_value = utils.getVoteValue(100, account, effective_vp);
 	    const vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price, steem_price);
 	    const min_total_bids_value_usd = vote_value_usd * AUTHOR_PCT * ((100 - config.max_roi) / 100);
 	    const min_total_bids_value_steem = min_total_bids_value_usd / steem_price;
 	
-	    res.json({ 
-	        current_round: outstanding_bids, 
-	        next_round: next_round, 
+	    res.json({
+	        current_round: outstanding_bids,
+	        next_round: next_round,
 	        last_round: last_round,
 	        vp: (vp / 100).toFixed(2),
 	        test_min_vp: (test_min_vp / 100).toFixed(2),
 	        vote_value: vote_value.toFixed(3),
 	        vote_value_usd: vote_value_usd.toFixed(3),
-	        min_total_bids_value_steem: min_total_bids_value_steem.toFixed(3)
+	        min_total_bids_value_steem: min_total_bids_value_steem.toFixed(3),
+	        time_til_target_power: time_til_target_power
 	    });
 	});
+
 	
 	app.get('/', (req, res) => {
 	    res.send(`
@@ -133,6 +136,12 @@ function startup() {
 	                .mt-custom-smaller {
 	                    margin-top: 1rem;
 	                }
+	                #countdown {
+	                    font-size: 2rem;
+	                    font-weight: bold;
+	                    margin: 1rem 0;
+	                    color: #0d6efd;
+	                }
 	            </style>
 	        </head>
 	        <body>
@@ -165,6 +174,7 @@ function startup() {
 	            </nav>
 	
 	            <div class="container my-5 text-center">
+	                <div id="countdown"></div>
 	                <h1 class="mb-4">Current Round</h1>
 	                <div id="currentRound" class="row row-cols-1 g-4"></div>
 	                <h1 class="mb-4 mt-custom-smaller">Next Round</h1>
@@ -174,6 +184,32 @@ function startup() {
 	            </div>
 	            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 	            <script>
+	                let timeTilTargetPower = -1;
+
+ 	                function createCard(bid) {
+						return \`
+							<div class="col-12">
+								<div class="card h-100">
+									<div class="card-body">
+										<h5 class="card-title">Bid from \${bid.sender}</h5>
+										<p class="card-text">Amount: \${bid.amount} \${bid.currency}</p>
+										<p class="card-text">Author: \${bid.author}</p>
+										\${bid.weight !== undefined ? \`<p class="card-text">Vote: \${bid.weight / 100} %</p>\` : ''}
+										<a href="\${bid.url}" class="card-link">View Post</a>
+									</div>
+								</div>
+							</div>
+						\`;
+					}
+
+					function populateCards(round, containerId) {
+						const container = document.getElementById(containerId);
+						container.innerHTML = '';
+						round.forEach(bid => {
+							container.innerHTML += createCard(bid);
+						});
+					}
+							 
 	                function fetchData() {
 	                    fetch('/api/bids')
 	                        .then(response => response.json())
@@ -184,38 +220,38 @@ function startup() {
 	                            document.getElementById('voteValueUsd').innerHTML = 'Vote Value (USD): <strong>' + data.vote_value_usd + '</strong>';
 	                            document.getElementById('minTotalBidsValueSteem').innerHTML = 'Min Bids (STEEM): <strong>' + data.min_total_bids_value_steem + '</strong>';
 	
-	                            function createCard(bid) {
-	                                return \`
-	                                    <div class="col-12">
-	                                        <div class="card h-100">
-	                                            <div class="card-body">
-	                                                <h5 class="card-title">Bid from \${bid.sender}</h5>
-	                                                <p class="card-text">Amount: \${bid.amount} \${bid.currency}</p>
-	                                                <p class="card-text">Author: \${bid.author}</p>
-	                                                \${bid.weight !== undefined ? \`<p class="card-text">Vote: \${bid.weight / 100} %</p>\` : ''}
-	                                                <a href="\${bid.url}" class="card-link">View Post</a>
-	                                            </div>
-	                                        </div>
-	                                    </div>
-	                                \`;
-	                            }
-	
-	                            function populateCards(round, containerId) {
-	                                const container = document.getElementById(containerId);
-	                                container.innerHTML = '';
-	                                round.forEach(bid => {
-	                                    container.innerHTML += createCard(bid);
-	                                });
-	                            }
-	
+	                            timeTilTargetPower = data.time_til_target_power;
+	                            updateCountdown();
+
 	                            populateCards(data.current_round, 'currentRound');
 	                            populateCards(data.next_round, 'nextRound');
 	                            populateCards(data.last_round, 'lastRound');
 	                        });
 	                }
 	
+	                function formatTime(seconds) {
+	                    const hours = Math.floor(seconds / 3600);
+	                    const minutes = Math.floor((seconds % 3600) / 60);
+	                    const remainingSeconds = seconds % 60;
+	                    return \`\${hours.toString().padStart(2, '0')}:\${minutes.toString().padStart(2, '0')}:\${remainingSeconds.toString().padStart(2, '0')}\`;
+	                }
+	
+	                function updateCountdown() {
+	                    const countdownElement = document.getElementById('countdown');
+	                    if (timeTilTargetPower > 0) {
+	                        countdownElement.innerHTML = 'Time until vote: ' + formatTime(timeTilTargetPower);
+	                        timeTilTargetPower--;
+	                    } else if (timeTilTargetPower == -1) {
+	                        countdownElement.innerHTML = 'Loading..';
+	                    } else {
+	                        countdownElement.innerHTML = 'Can vote now!';
+	                    }
+	                }
+	
 	                fetchData();
 	                setInterval(fetchData, 60000);
+	
+	                setInterval(updateCountdown, 1000);
 	            </script>
 	        </body>
 	        </html>
