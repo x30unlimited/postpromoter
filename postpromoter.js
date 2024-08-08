@@ -72,7 +72,8 @@ function startup() {
 
     app.get('/api/bids', (req, res) => {
 	    const vp = utils.getVotingPower(account);
-	    const vote_value = utils.getVoteValue(100, account, test_min_vp);
+	    let effective_vp = vp < test_min_vp ? test_min_vp : vp;
+	    const vote_value = utils.getVoteValue(100, account, effective_vp);
 	    const vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price, steem_price);
 	
 	    res.json({ 
@@ -80,6 +81,7 @@ function startup() {
 	        next_round: next_round, 
 	        last_round: last_round,
 	        vp: (vp / 100).toFixed(2),
+	        test_min_vp: (test_min_vp / 100).toFixed(2),
 	        vote_value: vote_value.toFixed(3),
 	        vote_value_usd: vote_value_usd.toFixed(3)
 	    });
@@ -105,7 +107,10 @@ function startup() {
 	                    <div class="collapse navbar-collapse" id="navbarNav">
 	                        <ul class="navbar-nav">
 	                            <li class="nav-item">
-	                                <a class="nav-link" href="#" id="vp">Voting Power: </a>
+	                                <a class="nav-link" href="#" id="vp">VP: </a>
+	                            </li>
+	                            <li class="nav-item">
+	                                <a class="nav-link" href="#" id="testMinVp">Min VP: </a>
 	                            </li>
 	                            <li class="nav-item">
 	                                <a class="nav-link" href="#" id="voteValue">Vote Value: </a>
@@ -132,7 +137,8 @@ function startup() {
 	                    fetch('/api/bids')
 	                        .then(response => response.json())
 	                        .then(data => {
-	                            document.getElementById('vp').innerHTML = 'Voting Power: <strong>' + data.vp + ' %</strong>';
+	                            document.getElementById('vp').innerHTML = 'VP: <strong>' + data.vp + ' %</strong>';
+	                            document.getElementById('testMinVp').innerHTML = 'Min VP: <strong>' + data.test_min_vp + '%</strong>';
 	                            document.getElementById('voteValue').innerHTML = 'Vote Value: <strong>' + data.vote_value + '</strong>';
 	                            document.getElementById('voteValueUsd').innerHTML = 'Vote Value (USD): <strong>' + data.vote_value_usd + '</strong>';
 	
@@ -154,7 +160,7 @@ function startup() {
 	
 	                            function populateCards(round, containerId) {
 	                                const container = document.getElementById(containerId);
-	                                container.innerHTML = ''; // Clear previous content
+	                                container.innerHTML = '';
 	                                round.forEach(bid => {
 	                                    container.innerHTML += createCard(bid);
 	                                });
@@ -166,8 +172,8 @@ function startup() {
 	                        });
 	                }
 	
-	                fetchData(); // Initial fetch
-	                setInterval(fetchData, 300000); // Fetch every 5 minutes (300000 milliseconds)
+	                fetchData();
+	                setInterval(fetchData, 60000);
 	            </script>
 	        </body>
 	        </html>
