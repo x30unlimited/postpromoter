@@ -97,13 +97,49 @@ function startup() {
 	        <head>
 	            <meta charset="UTF-8">
 	            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	            <title>Bid Rounds</title>
+	            <title>Bot Info Page</title>
 	            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+	            <style>
+	                body {
+	                    display: flex;
+	                    flex-direction: column;
+	                    align-items: center;
+	                    justify-content: center;
+	                    min-height: 100vh;
+	                    background-color: #f8f9fa;
+	                }
+	                .container {
+	                    max-width: 800px;
+	                }
+	                .navbar {
+	                    width: 100%;
+	                    border-bottom: 2px solid #0d6efd;
+	                }
+	                .card {
+	                    background-color: #e3f2fd;
+	                    border: 1px solid #2196f3;
+	                }
+	                .card-title {
+	                    color: #0d6efd;
+	                }
+	                .nav-link {
+	                    color: #0d6efd !important;
+	                }
+	                .nav-link strong {
+	                    color: #d63384 !important;
+	                }
+	                .mt-custom {
+	                    margin-top: 2rem;
+	                }
+	                .mt-custom-smaller {
+	                    margin-top: 1rem;
+	                }
+	            </style>
 	        </head>
 	        <body>
 	            <nav class="navbar navbar-expand-lg navbar-light bg-light">
 	                <div class="container-fluid">
-	                    <a class="navbar-brand" href="#">Bot Info</a>
+	                    <a class="navbar-brand" href="#">Stats</a>
 	                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 	                        <span class="navbar-toggler-icon"></span>
 	                    </button>
@@ -129,13 +165,13 @@ function startup() {
 	                </div>
 	            </nav>
 	
-	            <div class="container my-5">
+	            <div class="container my-5 text-center">
 	                <h1 class="mb-4">Current Round</h1>
-	                <div id="currentRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
-	                <h1 class="mb-4">Next Round</h1>
-	                <div id="nextRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
-	                <h1 class="mb-4 mt-5">Last Round</h1>
-	                <div id="lastRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
+	                <div id="currentRound" class="row row-cols-1 g-4"></div>
+	                <h1 class="mb-4 mt-custom-smaller">Next Round</h1>
+	                <div id="nextRound" class="row row-cols-1 g-4"></div>
+	                <h1 class="mb-4 mt-custom">Last Round</h1>
+	                <div id="lastRound" class="row row-cols-1 g-4"></div>
 	            </div>
 	            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 	            <script>
@@ -151,7 +187,7 @@ function startup() {
 	
 	                            function createCard(bid) {
 	                                return \`
-	                                    <div class="col">
+	                                    <div class="col-12">
 	                                        <div class="card h-100">
 	                                            <div class="card-body">
 	                                                <h5 class="card-title">Bid from \${bid.sender}</h5>
