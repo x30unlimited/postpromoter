@@ -108,7 +108,7 @@ function startup() {
 	                    background-color: #f8f9fa;
 	                }
 	                .container {
-	                    max-width: 800px;
+	                    max-width: 888px;
 	                }
 	                .navbar {
 	                    width: 100%;
@@ -178,8 +178,8 @@ function startup() {
 	                    fetch('/api/bids')
 	                        .then(response => response.json())
 	                        .then(data => {
-	                            document.getElementById('vp').innerHTML = 'VP: <strong>' + data.vp + ' %</strong>';
-	                            document.getElementById('testMinVp').innerHTML = 'Min VP: <strong>' + data.test_min_vp + ' %</strong>';
+	                            document.getElementById('vp').innerHTML = 'VP: <strong>' + data.vp + '%</strong>';
+	                            document.getElementById('testMinVp').innerHTML = 'Min VP: <strong>' + data.test_min_vp + '%</strong>';
 	                            document.getElementById('voteValue').innerHTML = 'Vote Value: <strong>' + data.vote_value + '</strong>';
 	                            document.getElementById('voteValueUsd').innerHTML = 'Vote Value (USD): <strong>' + data.vote_value_usd + '</strong>';
 	                            document.getElementById('minTotalBidsValueSteem').innerHTML = 'Min Bids (STEEM): <strong>' + data.min_total_bids_value_steem + '</strong>';
