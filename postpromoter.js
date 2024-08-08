@@ -70,63 +70,109 @@ function startup() {
       next();
     });
 
-    app.get('/api/bids', (req, res) => res.json({ current_round: outstanding_bids, next_round: next_round, last_round: last_round }));
-    app.get('/', (req, res) => {
-        res.send(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Bid Rounds</title>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-            </head>
-            <body>
-                <div class="container my-5">
-                    <h1 class="mb-4">Current Round</h1>
-                    <div id="currentRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
-                    <h1 class="mb-4">Next Round</h1>
-                    <div id="nextRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
-                    <h1 class="mb-4 mt-5">Last Round</h1>
-                    <div id="lastRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
-                </div>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-                <script>
-                    fetch('/api/bids')
-                        .then(response => response.json())
-                        .then(data => {
-                            function createCard(bid) {
-                                return \`
-                                    <div class="col">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <h5 class="card-title">Bid from \${bid.sender}</h5>
-                                                <p class="card-text">Amount: \${bid.amount} \${bid.currency}</p>
-                                                <p class="card-text">Author: \${bid.author}</p>
-						\${bid.weight !== undefined ? \`<p class="card-text">Vote: \${bid.weight / 100} %</p>\` : ''}
-                                                <a href="\${bid.url}" class="card-link">View Post</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                \`;
-                            }
-
-                            function populateCards(round, containerId) {
-                                const container = document.getElementById(containerId);
-                                round.forEach(bid => {
-                                    container.innerHTML += createCard(bid);
-                                });
-                            }
-
-                            populateCards(data.current_round, 'currentRound');
-			    populateCards(data.next_round, 'nextRound');
-                            populateCards(data.last_round, 'lastRound');
-                        });
-                </script>
-            </body>
-            </html>
-        `);
-    });
+    app.get('/api/bids', (req, res) => {
+	    const vp = utils.getVotingPower(account);
+	    const vote_value = utils.getVoteValue(100, account, vp);
+	    const vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price, steem_price);
+	
+	    res.json({ 
+	        current_round: outstanding_bids, 
+	        next_round: next_round, 
+	        last_round: last_round,
+	        vp: vp,
+	        vote_value: vote_value,
+	        vote_value_usd: vote_value_usd
+	    });
+	});
+	
+	app.get('/', (req, res) => {
+	    res.send(`
+	        <!DOCTYPE html>
+	        <html lang="en">
+	        <head>
+	            <meta charset="UTF-8">
+	            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	            <title>Bid Rounds</title>
+	            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+	        </head>
+	        <body>
+	            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+	                <div class="container-fluid">
+	                    <a class="navbar-brand" href="#">Voting Info</a>
+	                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+	                        <span class="navbar-toggler-icon"></span>
+	                    </button>
+	                    <div class="collapse navbar-collapse" id="navbarNav">
+	                        <ul class="navbar-nav">
+	                            <li class="nav-item">
+	                                <a class="nav-link" href="#" id="vp">Voting Power: </a>
+	                            </li>
+	                            <li class="nav-item">
+	                                <a class="nav-link" href="#" id="voteValue">Vote Value: </a>
+	                            </li>
+	                            <li class="nav-item">
+	                                <a class="nav-link" href="#" id="voteValueUsd">Vote Value (USD): </a>
+	                            </li>
+	                        </ul>
+	                    </div>
+	                </div>
+	            </nav>
+	
+	            <div class="container my-5">
+	                <h1 class="mb-4">Current Round</h1>
+	                <div id="currentRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
+	                <h1 class="mb-4">Next Round</h1>
+	                <div id="nextRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
+	                <h1 class="mb-4 mt-5">Last Round</h1>
+	                <div id="lastRound" class="row row-cols-1 row-cols-md-2 g-4"></div>
+	            </div>
+	            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+	            <script>
+	                function fetchData() {
+	                    fetch('/api/bids')
+	                        .then(response => response.json())
+	                        .then(data => {
+	                            document.getElementById('vp').innerText = 'Voting Power: ' + data.vp;
+	                            document.getElementById('voteValue').innerText = 'Vote Value: ' + data.vote_value;
+	                            document.getElementById('voteValueUsd').innerText = 'Vote Value (USD): ' + data.vote_value_usd;
+	
+	                            function createCard(bid) {
+	                                return \`
+	                                    <div class="col">
+	                                        <div class="card h-100">
+	                                            <div class="card-body">
+	                                                <h5 class="card-title">Bid from \${bid.sender}</h5>
+	                                                <p class="card-text">Amount: \${bid.amount} \${bid.currency}</p>
+	                                                <p class="card-text">Author: \${bid.author}</p>
+	                                                \${bid.weight !== undefined ? \`<p class="card-text">Vote: \${bid.weight / 100} %</p>\` : ''}
+	                                                <a href="\${bid.url}" class="card-link">View Post</a>
+	                                            </div>
+	                                        </div>
+	                                    </div>
+	                                \`;
+	                            }
+	
+	                            function populateCards(round, containerId) {
+	                                const container = document.getElementById(containerId);
+	                                container.innerHTML = '';
+	                                round.forEach(bid => {
+	                                    container.innerHTML += createCard(bid);
+	                                });
+	                            }
+	
+	                            populateCards(data.current_round, 'currentRound');
+	                            populateCards(data.next_round, 'nextRound');
+	                            populateCards(data.last_round, 'lastRound');
+	                        });
+	                }
+	
+	                fetchData();
+	                setInterval(fetchData, 60000);
+	            </script>
+	        </body>
+	        </html>
+	    `);
+	});
     app.listen(port, () => utils.log('API running on port ' + port))
   }
 
