@@ -72,16 +72,16 @@ function startup() {
 
     app.get('/api/bids', (req, res) => {
 	    const vp = utils.getVotingPower(account);
-	    const vote_value = utils.getVoteValue(100, account, vp);
+	    const vote_value = utils.getVoteValue(100, account, test_min_vp);
 	    const vote_value_usd = utils.getVoteValueUSD(vote_value, sbd_price, steem_price);
 	
 	    res.json({ 
 	        current_round: outstanding_bids, 
 	        next_round: next_round, 
 	        last_round: last_round,
-	        vp: vp,
-	        vote_value: vote_value,
-	        vote_value_usd: vote_value_usd
+	        vp: (vp / 100).toFixed(2),
+	        vote_value: vote_value.toFixed(3),
+	        vote_value_usd: vote_value_usd.toFixed(3)
 	    });
 	});
 	
@@ -98,7 +98,7 @@ function startup() {
 	        <body>
 	            <nav class="navbar navbar-expand-lg navbar-light bg-light">
 	                <div class="container-fluid">
-	                    <a class="navbar-brand" href="#">Voting Info</a>
+	                    <a class="navbar-brand" href="#">Bot Info</a>
 	                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 	                        <span class="navbar-toggler-icon"></span>
 	                    </button>
@@ -132,9 +132,9 @@ function startup() {
 	                    fetch('/api/bids')
 	                        .then(response => response.json())
 	                        .then(data => {
-	                            document.getElementById('vp').innerText = 'Voting Power: ' + data.vp;
-	                            document.getElementById('voteValue').innerText = 'Vote Value: ' + data.vote_value;
-	                            document.getElementById('voteValueUsd').innerText = 'Vote Value (USD): ' + data.vote_value_usd;
+	                            document.getElementById('vp').innerHTML = 'Voting Power: <strong>' + data.vp + ' %</strong>';
+	                            document.getElementById('voteValue').innerHTML = 'Vote Value: <strong>' + data.vote_value + '</strong>';
+	                            document.getElementById('voteValueUsd').innerHTML = 'Vote Value (USD): <strong>' + data.vote_value_usd + '</strong>';
 	
 	                            function createCard(bid) {
 	                                return \`
@@ -154,7 +154,7 @@ function startup() {
 	
 	                            function populateCards(round, containerId) {
 	                                const container = document.getElementById(containerId);
-	                                container.innerHTML = '';
+	                                container.innerHTML = ''; // Clear previous content
 	                                round.forEach(bid => {
 	                                    container.innerHTML += createCard(bid);
 	                                });
@@ -166,8 +166,8 @@ function startup() {
 	                        });
 	                }
 	
-	                fetchData();
-	                setInterval(fetchData, 60000);
+	                fetchData(); // Initial fetch
+	                setInterval(fetchData, 300000); // Fetch every 5 minutes (300000 milliseconds)
 	            </script>
 	        </body>
 	        </html>
