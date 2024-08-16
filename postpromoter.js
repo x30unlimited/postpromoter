@@ -1092,6 +1092,9 @@ function checkPost(memo, amount, currency, sender, retries) {
 			if(!existing_bid) {
 				existing_bid = next_round.find(bid => bid.url == memo);
 			}
+			if(!existing_bid) {
+				existing_bid = last_round.find(bid => bid.url == memo);
+			}
 			
 			// Check if the round is full
 			if(!existing_bid && checkRoundFillLimit(outstanding_bids, amount, currency)) {
