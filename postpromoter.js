@@ -352,13 +352,12 @@ function startProcess() {
       // Wrong state fix
       if (vp >= min_vp && next_round.length > 0 && outstanding_bids.length == 0 && round_end_timeout < 0) {
         outstanding_bids = next_round.slice();
-	next_round = [];
+        next_round = [];
       }
 	    
       if (vp >= min_vp && outstanding_bids.length > 0 && round_end_timeout < 0) {
         round_end_timeout = setTimeout(function() {
-          round_end_timeout = -1;
-
+          
           // Don't process any bids while we are voting due to race condition (they will be processed when voting is done).
           isVoting = first_load = true;
 
@@ -380,18 +379,22 @@ function startProcess() {
 
           // Save the state of the bot to disk
           saveState();
+
+          round_end_timeout = -1;
         }, 30 * 1000);
       }
 
-      // Load transactions to the bot account
-      getTransactions(saveState);
-      
-      // Check if there are any rewards to claim.
-      claimRewards();
-
-      // Check if it is time to withdraw funds.
-      if (config.auto_withdrawal.frequency == 'daily')
-        checkAutoWithdraw();
+      if (round_end_timeout < 0) {
+	      // Load transactions to the bot account
+	      getTransactions(saveState);
+	      
+	      // Check if there are any rewards to claim.
+	      claimRewards();
+	
+	      // Check if it is time to withdraw funds.
+	      if (config.auto_withdrawal.frequency == 'daily')
+	        checkAutoWithdraw();
+      }
     }
     isRunningProcess = false;
   }, function(err) {
