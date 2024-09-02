@@ -1812,6 +1812,8 @@ function loadConfig() {
 
 function failover() {
   if(config.rpc_nodes && config.rpc_nodes.length > 1) {
+    utils.log('Failing over attempt from: ' + rpc_node);
+    
     // Give it a minute after the failover to account for more errors coming in from the original node
     setTimeout(function() { error_count = 0; }, 60 * 1000);
 
