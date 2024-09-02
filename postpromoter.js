@@ -1839,6 +1839,7 @@ function logError(message) {
 
   utils.log('Error Count: ' + error_count + ', Current node: ' + rpc_node);
   utils.log(message);
+  failover()
 }
 
 // Check if 10+ errors have happened in a 3-minute period and fail over to next rpc node
@@ -1849,4 +1850,4 @@ function checkErrors() {
   // Reset the error counter
   error_count = 0;
 }
-setInterval(checkErrors, 3 * 60 * 1000);
+//setInterval(checkErrors, 1 * 60 * 1000);
