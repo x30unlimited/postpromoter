@@ -1034,7 +1034,7 @@ function checkPost(memo, amount, currency, sender, retries) {
   }
 
   if (author == '' || permLink == '') {
-    refund(sender, amount, currency, 'invalid_post_url');
+    refund(sender, amount, currency, 'invalid_post_url', 0);
     return;
   }
 
@@ -1047,7 +1047,7 @@ function checkPost(memo, amount, currency, sender, retries) {
 
   // If this bot is whitelist-only then make sure the sender is on the whitelist
   if(config.blacklist_settings.whitelist_only && whitelist.indexOf(sender) < 0) {
-    refund(sender, amount, currency, 'whitelist_only');
+    refund(sender, amount, currency, 'whitelist_only', 0);
     return;
   }
 
@@ -1055,7 +1055,7 @@ function checkPost(memo, amount, currency, sender, retries) {
   if(config.max_per_author_per_round && config.max_per_author_per_round > 0) {
     if(outstanding_bids.filter(b => b.author == author).length >= config.max_per_author_per_round)
     {
-      refund(sender, amount, currency, 'bids_per_round');
+      refund(sender, amount, currency, 'bids_per_round', 0);
       return;
     }
   }
@@ -1069,7 +1069,7 @@ function checkPost(memo, amount, currency, sender, retries) {
 		
 		validatePost(author, permLink, false, function(error) {
 			if(error) {
-				refund(sender, amount, currency, error);
+				refund(sender, amount, currency, error, 0);
 				return;
 			}
 			
@@ -1082,7 +1082,7 @@ function checkPost(memo, amount, currency, sender, retries) {
 				var refund_value = Math.ceil((new_bid_value - vote_value_usd * AUTHOR_PCT * config.round_fill_limit) / ((currency == 'SBD') ? sbd_price : steem_price) * 1000) / 1000;
 
 				if(refund_value > 0){
-					refund(sender, refund_value, currency, 'overbid');
+					refund(sender, refund_value, currency, 'overbid', 0);
 					amount -= refund_value;
 				}
 			}
@@ -1099,11 +1099,11 @@ function checkPost(memo, amount, currency, sender, retries) {
 			// Check if the round is full
 			if(!existing_bid && checkRoundFillLimit(outstanding_bids, amount, currency)) {
 				if(checkRoundFillLimit(next_round, amount, currency)) {
-					refund(sender, amount, currency, 'next_round_full');
+					refund(sender, amount, currency, 'next_round_full', 0);
 					return;
 				} else {
 					push_to_next_round = true;
-					refund(sender, 0.001, currency, 'round_full');
+					refund(sender, 0.001, currency, 'round_full', 0);
 				}
 			}
 
@@ -1111,7 +1111,7 @@ function checkPost(memo, amount, currency, sender, retries) {
 			var round = (push_to_next_round || error == 'min_age') ? next_round : outstanding_bids;
 			
 			if(existing_bid) {
-				refund(sender, amount, currency, 'A bid with this link already exists !');
+				refund(sender, amount, currency, 'A bid with this link already exists !', 0);
 				return;
 				/*
 				// There is already a bid for this post in the current round
@@ -1333,9 +1333,6 @@ function refund(sender, amount, currency, reason, retries, data, pubkey) {
     utils.log('Backup Mode - not sending refund of ' + amount + ' ' + currency + ' to @' + sender + ' for reason: ' + reason);
     return;
   }
-
-  if(!retries)
-    retries = 0;
 
   // Make sure refunds are enabled and the sender isn't on the no-refund list (for exchanges and things like that).
   if (reason != 'forward_payment' && (!config.refunds_enabled || sender == config.account || (config.no_refund && config.no_refund.indexOf(sender) >= 0))) {
