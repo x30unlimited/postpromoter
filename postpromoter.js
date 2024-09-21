@@ -1371,16 +1371,17 @@ function refund(sender, amount, currency, reason, retries, data, pubkey) {
   // if the bid was sent encrypted, we encrypt it back
   if (pubkey && pubkey.length > 1) memo = steem.memo.encode(config.memo_key, pubkey, ('#' + memo))
   // Issue the refund.
-  client.broadcast.transfer({ amount: utils.format(amount, 3) + ' ' + currency, from: config.account, to: sender, memo: memo }, dsteem.PrivateKey.fromString(config.active_key)).then(function(response) {
+  client.broadcast.transfer({ amount: utils.format(amount, 3) + ' ' + currency, from: config.account, to: sender, memo: retries > 0 ? memo + ' (retry ' + retries + ')' : memo }, dsteem.PrivateKey.fromString(config.active_key)).then(function(response) {
     utils.log('Refund of ' + amount + ' ' + currency + ' sent to @' + sender + ' for reason: ' + reason);
   }, function(err) {
-    logError('Error sending refund to @' + sender + ' for: ' + amount + ' ' + currency + ', Error: ' + err);
+    logError('Error sending refund to @' + sender + ' for: ' + amount + ' ' + currency + ', count: ' + (retries + 1) + ',  Error: ' + err);
 
     // Try again on error
-    if(retries < 2)
-      setTimeout(function() { refund(sender, amount, currency, reason, retries + 1, data, pubkey) }, (Math.floor(Math.random() * 10) + 3) * 1000);
+
+    if(retries < 5)
+      setTimeout(function() { refund(sender, amount, currency, reason, retries + 1, data, pubkey) }, (Math.floor(Math.random() * 10) + 10) * 1000);
     else
-      utils.log('============= Refund failed three times for: @' + sender + ' ===============');
+      utils.log('============= Refund failed 5 times for: @' + sender + ' ===============');
   });
 }
 
