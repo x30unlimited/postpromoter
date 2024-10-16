@@ -410,42 +410,6 @@ function startVoting(bids) {
     return;
   }
 
-  // Validate each post before voting
-  utils.log('=======================================================');
-
-  let validBids = [];
-
-  for (let i = 0; i < bids.length; i++) {
-    const bid = bids[i];
-
-    validatePost(bid.author, bid.permlink, true, function(error) {
-      if (error) {
-        // Refund bid if validation fails
-        utils.log(`Post @${bid.author}/${bid.permlink} failed validation due to: ${error}. Refunding bid.`);
-        refund(bid.sender, bid.amount, bid.currency, error, 0);
-      } else {
-        // If validation passes, keep it for voting
-        validBids.push(bid);
-        powerUp(bid.amount, bid.currency);  // Power up the valid bid
-      }
-    });
-  }
-
-  // Now we have only valid bids in `validBids`
-  if (validBids.length === 0) {
-    utils.log("No valid bids to process for voting.");
-    setTimeout(function () {
-      utils.log('=======================================================');
-      utils.log('Voting Complete!');
-      utils.log('=======================================================');
-      isVoting = false;
-      first_load = true;
-    }, 5000);
-    return;
-  }
-
-  bids = validBids;
-
   // Sum the amounts of all of the bids
   var total = bids.reduce(function(total, bid) {
     return total + getUsdValue(bid);
@@ -514,17 +478,18 @@ function comment(bids) {
 function sendVote(bid, retries, callback) {
   utils.log('Casting: ' + utils.format(bid.weight / 100) + '% vote cast for: @' + bid.author + '/' + bid.permlink);
   
-  /*validatePost(bid.author, bid.permlink, true, function(e) {
+  validatePost(bid.author, bid.permlink, true, function(e) {
     if(e) {
       utils.log('Post @' + bid.author + '/' + bid.permlink + ' is invalid for reason: ' + e);
+      refund(bid.sender, bid.amount, bid.currency, e, 0);
 
       if(callback)
         callback();
-    } else {*/
+    } else {
       client.broadcast.vote({ voter: account.name, author: bid.author, permlink: bid.permlink, weight: bid.weight }, dsteem.PrivateKey.fromString(config.posting_key)).then(function(result) {
         if (result) {
           utils.log(utils.format(bid.weight / 100) + '% vote cast for: @' + bid.author + '/' + bid.permlink);
-
+          powerUp(bid.amount, bid.currency);
           if (callback)
             callback();
         }
@@ -542,8 +507,8 @@ function sendVote(bid, retries, callback) {
             callback();
         }
       });
-  /*}
-  });*/
+    }
+  });
 }
 
 function sendComment(bid) {
