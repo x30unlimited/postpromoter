@@ -410,6 +410,36 @@ function startVoting(bids) {
     return;
   }
 
+  // Validate each post before voting
+  utils.log('=======================================================');
+
+  let validBids = [];
+
+  for (let i = 0; i < bids.length; i++) {
+    const bid = bids[i];
+
+    validatePost(bid.author, bid.permlink, true, function(error) {
+      if (error) {
+        // Refund bid if validation fails
+        utils.log(`Post @${bid.author}/${bid.permlink} failed validation due to: ${error}. Refunding bid.`);
+        refund(bid.sender, bid.amount, bid.currency, error, 0);
+      } else {
+        // If validation passes, keep it for voting
+        validBids.push(bid);
+        powerUp(bid.amount, bid.currency);  // Power up the valid bid
+      }
+    });
+  }
+
+  // Now we have only valid bids in `validBids`
+  if (validBids.length === 0) {
+    utils.log("No valid bids to process for voting.");
+    isVoting = false;
+    return;
+  }
+
+  bids = validBids;
+
   // Sum the amounts of all of the bids
   var total = bids.reduce(function(total, bid) {
     return total + getUsdValue(bid);
@@ -1148,14 +1178,14 @@ function checkPost(memo, amount, currency, sender, retries) {
 			} else {
 				// All good - push to the array of valid bids for this round
 				utils.log('Valid Bid - Amount: ' + amount + ' ' + currency + ', Url: ' + memo);
-				round.push({ amount: amount, currency: currency, sender: sender, author: author, permlink: permLink, url: memo });
+				round.push({ amount: push_to_next_round ? amount - 0.001 : amount, currency: currency, sender: sender, author: author, permlink: permLink, url: memo });
 
 				// If this bid is through an affiliate service, send the fee payout
 				if(affiliate) {
 					refund(affiliate.beneficiary, amount * (affiliate.fee_pct / 10000), currency, 'affiliate', 0, 'Sender: @' + sender + ', Post: ' + memo);
-					powerUp(amount - amount * (affiliate.fee_pct / 10000) - (push_to_next_round ? 0.001 : 0), currency);
-				} else
-					powerUp(amount - (push_to_next_round ? 0.001 : 0), currency);
+					//powerUp(amount - amount * (affiliate.fee_pct / 10000) - (push_to_next_round ? 0.001 : 0), currency);
+				} //else
+					//powerUp(amount - (push_to_next_round ? 0.001 : 0), currency);
 				
 			}
 			
