@@ -434,7 +434,13 @@ function startVoting(bids) {
   // Now we have only valid bids in `validBids`
   if (validBids.length === 0) {
     utils.log("No valid bids to process for voting.");
-    isVoting = false;
+    setTimeout(function () {
+      utils.log('=======================================================');
+      utils.log('Voting Complete!');
+      utils.log('=======================================================');
+      isVoting = false;
+      first_load = true;
+    }, 5000);
     return;
   }
 
