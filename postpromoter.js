@@ -1149,7 +1149,7 @@ function checkPost(memo, amount, currency, sender, retries) {
 			} else {
 				// All good - push to the array of valid bids for this round
 				utils.log('Valid Bid - Amount: ' + amount + ' ' + currency + ', Url: ' + memo);
-				round.push({ amount: push_to_next_round ? amount - 0.001 : amount, currency: currency, sender: sender, author: author, permlink: permLink, url: memo });
+				round.push({ amount: push_to_next_round ? (amount * 1000 - 1) / 1000 : amount, currency: currency, sender: sender, author: author, permlink: permLink, url: memo });
 
 				// If this bid is through an affiliate service, send the fee payout
 				if(affiliate) {
