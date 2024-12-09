@@ -84,6 +84,7 @@ function startup() {
 	        next_round: next_round,
 	        last_round: last_round,
 	        vp: (vp / 100).toFixed(2),
+	        max_roi: (config.max_roi / 100).toFixed(2),
 	        test_min_vp: (test_min_vp / 100).toFixed(2),
 	        vote_value: vote_value.toFixed(3),
 	        vote_value_usd: vote_value_usd.toFixed(3),
@@ -159,14 +160,17 @@ function startup() {
 	                            <li class="nav-item">
 	                                <a class="nav-link" href="#" id="testMinVp">Min VP: </a>
 	                            </li>
-	                            <li class="nav-item">
+	                            <!--li class="nav-item">
 	                                <a class="nav-link" href="#" id="voteValue">Vote Value: </a>
-	                            </li>
+	                            </li-->
 	                            <li class="nav-item">
 	                                <a class="nav-link" href="#" id="voteValueUsd">Vote Value (USD): </a>
 	                            </li>
 	                            <li class="nav-item">
 	                                <a class="nav-link" href="#" id="minTotalBidsValueSteem">Min Bids: </a>
+	                            </li>
+	                            <li class="nav-item">
+	                                <a class="nav-link" href="#" id="maxRoi">Max ROI: </a>
 	                            </li>
 	                        </ul>
 	                    </div>
@@ -216,9 +220,10 @@ function startup() {
 	                        .then(data => {
 	                            document.getElementById('vp').innerHTML = 'VP: <strong>' + data.vp + '%</strong>';
 	                            document.getElementById('testMinVp').innerHTML = 'Min VP: <strong>' + data.test_min_vp + '%</strong>';
-	                            document.getElementById('voteValue').innerHTML = 'Vote Value: <strong>' + data.vote_value + '</strong>';
+	                            //document.getElementById('voteValue').innerHTML = 'Vote Value: <strong>' + data.vote_value + '</strong>';
 	                            document.getElementById('voteValueUsd').innerHTML = 'Vote Value (USD): <strong>' + data.vote_value_usd + '</strong>';
 	                            document.getElementById('minTotalBidsValueSteem').innerHTML = 'Min Bids (STEEM): <strong>' + data.min_total_bids_value_steem + '</strong>';
+	                            document.getElementById('maxRoi').innerHTML = 'Max ROI: <strong>' + data.max_roi + '%</strong>';
 	
 	                            timeTilTargetPower = data.time_til_target_power;
 	                            updateCountdown();
