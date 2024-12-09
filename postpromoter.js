@@ -84,7 +84,7 @@ function startup() {
 	        next_round: next_round,
 	        last_round: last_round,
 	        vp: (vp / 100).toFixed(2),
-	        max_roi: (config.max_roi / 100).toFixed(2),
+	        max_roi: config.max_roi.toFixed(2),
 	        test_min_vp: (test_min_vp / 100).toFixed(2),
 	        vote_value: vote_value.toFixed(3),
 	        vote_value_usd: vote_value_usd.toFixed(3),
